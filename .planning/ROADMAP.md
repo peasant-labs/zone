@@ -34,7 +34,10 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. `go test ./...` runs (even with zero tests) and exits 0
   3. GoReleaser config exists and `goreleaser check` passes
   4. CI workflow runs on push and reports pass/fail
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 01-01-PLAN.md — Go module init, Cobra CLI skeleton, all internal/pkg/test stubs
+- [ ] 01-02-PLAN.md — GoReleaser, golangci-lint, Makefile, CI workflows
 
 ### Phase 2: Config Foundation
 **Goal**: Users can write zone.toml and ~/.config/zone/config.toml and have them merged, validated, and surfaced clearly on errors
@@ -153,7 +156,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Project Scaffold | 0/TBD | Not started | - |
+| 1. Project Scaffold | 0/2 | Planning complete | - |
 | 2. Config Foundation | 0/TBD | Not started | - |
 | 3. Cache & State | 0/TBD | Not started | - |
 | 4. Template System | 0/TBD | Not started | - |
