@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 03-cache-state-02-PLAN.md
-last_updated: "2026-03-27T19:26:08.520Z"
+stopped_at: Completed 03-cache-state-03-PLAN.md
+last_updated: "2026-03-27T19:52:12.520Z"
 last_activity: 2026-03-27 — Phase 02 Plan 03 complete; zone config (annotated TOML + JSON) + zone validate (grouped errors, exit 2) + CFG-07/CFG-08 tests
 progress:
   total_phases: 10
   completed_phases: 3
-  total_plans: 7
-  completed_plans: 7
+  total_plans: 8
+  completed_plans: 8
   percent: 100
 ---
 
@@ -56,6 +56,7 @@ Progress: [██████████] 100%
 | Phase 02 P03 | 4min | 3 tasks | 6 files |
 | Phase 03-cache-state P01 | 8min | 3 tasks | 4 files |
 | Phase 03-cache-state P02 | 2min | 3 tasks | 4 files |
+| Phase 03-cache-state P03 | 3 | 1 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -81,6 +82,8 @@ Recent decisions affecting current work:
 - [Phase 03-02]: zone clean warns but proceeds if lock held — avoids deadlock on crashed prior process
 - [Phase 03-02]: EnsureGitignore as standalone function — operates on cwd, independent of .zone/ existence
 - [Phase 03-02]: Stale lock: pid<=0 treated as stale — prevents permanent block from corrupted PID file
+- [Phase 03-cache-state]: errors.Is in main.go traverses wrapped error chain — ErrLockContention wrapped via %w in Acquire() is correctly detected without custom Unwrap
+- [Phase 03-cache-state]: Exit code 5 check placed before generic os.Exit(1) in main.go — ordering is critical for correct mapping; full binary e2e deferred to Phase 6 when zone launch calls Lock.Acquire()
 
 ### Pending Todos
 
@@ -95,6 +98,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-27T19:26:08.517Z
-Stopped at: Completed 03-cache-state-02-PLAN.md
+Last session: 2026-03-27T19:52:12.518Z
+Stopped at: Completed 03-cache-state-03-PLAN.md
 Resume file: None
