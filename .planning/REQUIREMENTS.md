@@ -37,8 +37,8 @@
 - [x] **CFG-04**: List fields merge correctly: packages union, network allow/deny append, extra_args append
 - [x] **CFG-05**: Unknown config keys produce an error with edit-distance suggestions (Levenshtein)
 - [x] **CFG-06**: Dangerous mount paths are blocked (docker.sock, /proc, /sys, ~/.ssh, cloud creds) with symlink resolution
-- [ ] **CFG-07**: `zone config` shows merged result with source annotations (global vs repo)
-- [ ] **CFG-08**: `zone config --json` outputs machine-readable merged config
+- [x] **CFG-07**: `zone config` shows merged result with source annotations (global vs repo)
+- [x] **CFG-08**: `zone config --json` outputs machine-readable merged config
 - [x] **CFG-09**: Config schema version field (`version = 1`) is validated on parse
 - [ ] **CFG-10**: Environment variable forwarding supports glob patterns (e.g., `AWS_*`)
 - [ ] **CFG-11**: Pre-launch validation checks required env vars are set before Docker build starts
@@ -193,8 +193,8 @@
 | CFG-04 | Phase 2 | Complete |
 | CFG-05 | Phase 2 | Complete |
 | CFG-06 | Phase 2 | Complete |
-| CFG-07 | Phase 2 | Pending |
-| CFG-08 | Phase 2 | Pending |
+| CFG-07 | Phase 2 | Complete |
+| CFG-08 | Phase 2 | Complete |
 | CFG-09 | Phase 2 | Complete |
 | CFG-10 | Phase 7 | Pending |
 | CFG-11 | Phase 7 | Pending |
