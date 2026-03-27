@@ -64,7 +64,10 @@ Plans:
   2. Running two `zone` commands concurrently produces a clear lock-contention error (exit code 5) rather than corruption
   3. Changing zone.toml changes the computed config hash, triggering a rebuild on next launch
   4. Build logs are stored and readable via `zone logs --build`
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 03-01-PLAN.md — Cache struct, directory management, atomic writes, SHA256 hash computation
+- [ ] 03-02-PLAN.md — flock-based locking, gitignore management, build log storage, zone clean command
 
 ### Phase 4: Template System
 **Goal**: Zone generates correct, runnable Dockerfiles and entrypoints from embedded templates, with deterministic container naming
@@ -162,7 +165,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 |-------|----------------|--------|-----------|
 | 1. Project Scaffold | 2/2 | Complete   | 2026-03-27 |
 | 2. Config Foundation | 3/3 | Complete   | 2026-03-27 |
-| 3. Cache & State | 0/TBD | Not started | - |
+| 3. Cache & State | 0/2 | Not started | - |
 | 4. Template System | 0/TBD | Not started | - |
 | 5. Harness Plugin System | 0/TBD | Not started | - |
 | 6. Docker Lifecycle Core | 0/TBD | Not started | - |
