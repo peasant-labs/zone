@@ -10,6 +10,11 @@ var rootCmd = &cobra.Command{
 	Long:  "Zone generates and manages isolated Docker workspaces for LLM coding agents. Run zone launch in any repo to get a sandboxed container with zero manual Docker configuration.",
 }
 
+// SetVersion sets the version string on the root command, injected from main via ldflags.
+func SetVersion(version, commit, date string) {
+	rootCmd.Version = version + " (" + commit + ") built " + date
+}
+
 // Execute runs the root command and returns any error.
 func Execute() error {
 	return rootCmd.Execute()
