@@ -2,10 +2,14 @@
 package cache
 
 import (
+	"bufio"
 	"fmt"
+	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 // Cache manages the .zone/ directory for a single repository.
@@ -88,4 +92,66 @@ func (c *Cache) ConfigHash() (string, error) { return c.readTrimmed("config.hash
 // Clean removes the entire .zone/ directory and all its contents.
 func (c *Cache) Clean() error {
 	return os.RemoveAll(c.dir)
+}
+
+// EnsureGitignore adds .zone/ to the git root's .gitignore.
+// cwd is the directory zone is invoked from (where zone.toml lives).
+// Idempotent: no-op if entry already present. Silently skips non-git repos.
+func EnsureGitignore(cwd string) error {
+	out, err := exec.Command("git", "-C", cwd, "rev-parse", "--show-toplevel").Output()
+	if err != nil {
+		return nil // not in a git repo — silently skip
+	}
+	gitRoot := strings.TrimSpace(string(out))
+
+	rel, err := filepath.Rel(gitRoot, cwd)
+	if err != nil {
+		return fmt.Errorf("relative path: %w", err)
+	}
+	var entry string
+	if rel == "." {
+		entry = ".zone/"
+	} else {
+		entry = rel + "/.zone/"
+	}
+
+	gitignorePath := filepath.Join(gitRoot, ".gitignore")
+
+	// Check if entry already present (exact string match per line)
+	if data, err := os.ReadFile(gitignorePath); err == nil {
+		scanner := bufio.NewScanner(strings.NewReader(string(data)))
+		for scanner.Scan() {
+			if strings.TrimSpace(scanner.Text()) == entry {
+				return nil // already present
+			}
+		}
+	}
+
+	// Append entry (or create minimal .gitignore)
+	f, err := os.OpenFile(gitignorePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return fmt.Errorf("open .gitignore: %w", err)
+	}
+	defer f.Close()
+	_, err = fmt.Fprintf(f, "\n%s\n", entry)
+	return err
+}
+
+// CreateBuildLog opens .zone/logs/last_build.log for writing (truncate if exists).
+// Returns a writer that tees to both w (terminal) and the log file, plus a closer func.
+// Callers MUST defer closer() unconditionally — partial logs are kept on build failure.
+func (c *Cache) CreateBuildLog(w io.Writer, configHash, version string) (io.Writer, func(), error) {
+	logPath := filepath.Join(c.dir, "logs", "last_build.log")
+	f, err := os.Create(logPath)
+	if err != nil {
+		return nil, nil, fmt.Errorf("create build log: %w", err)
+	}
+
+	header := fmt.Sprintf("# zone build | %s | config hash: %s | zone %s\n",
+		time.Now().Format(time.RFC3339), configHash, version)
+	_, _ = f.WriteString(header)
+
+	tee := io.MultiWriter(w, f)
+	closer := func() { _ = f.Close() }
+	return tee, closer, nil
 }
