@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Phase 3 context gathered
-last_updated: "2026-03-27T09:26:58.649Z"
+stopped_at: Completed 03-cache-state-01-PLAN.md
+last_updated: "2026-03-27T19:21:19.306Z"
 last_activity: 2026-03-27 — Phase 02 Plan 03 complete; zone config (annotated TOML + JSON) + zone validate (grouped errors, exit 2) + CFG-07/CFG-08 tests
 progress:
   total_phases: 10
   completed_phases: 2
-  total_plans: 5
-  completed_plans: 5
+  total_plans: 7
+  completed_plans: 6
   percent: 100
 ---
 
@@ -54,6 +54,7 @@ Progress: [██████████] 100%
 | Phase 01 P02 | 2 min | 2 tasks | 7 files |
 | Phase 02 P02 | 7min | 2 tasks | 5 files |
 | Phase 02 P03 | 4min | 3 tasks | 6 files |
+| Phase 03-cache-state P01 | 8min | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -73,6 +74,9 @@ Recent decisions affecting current work:
 - [Phase 02]: renderAnnotatedTOML emits comment block above lists — inline TOML comments on array elements are invalid per spec pitfall 4
 - [Phase 02]: zone validate loads global + repo separately to accumulate UnknownKeysError alongside valid partial config
 - [Phase 02]: Integration tests use pre-built binary via sync.Once — avoids go run recompile per test
+- [Phase 03-01]: ComputeHash takes version as string param to avoid main.go import graph violation
+- [Phase 03-01]: readTrimmed returns ("", nil) for missing files — not-found is not an error
+- [Phase 03-01]: Hash includes only Dockerfile.tmpl + entrypoint.sh.tmpl per spec; zone-bashrc.tmpl excluded
 
 ### Pending Todos
 
@@ -87,6 +91,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-27T09:26:58.646Z
-Stopped at: Phase 3 context gathered
-Resume file: .planning/phases/03-cache-state/03-CONTEXT.md
+Last session: 2026-03-27T19:21:19.304Z
+Stopped at: Completed 03-cache-state-01-PLAN.md
+Resume file: None
