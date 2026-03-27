@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 02-02-PLAN.md
-last_updated: "2026-03-27T07:16:40.623Z"
-last_activity: 2026-03-27 — Phase 02 Plan 01 complete; typed config structs + TOML parsing for per-repo and global config
+stopped_at: Completed 02-03-PLAN.md
+last_updated: "2026-03-27T07:23:36.276Z"
+last_activity: 2026-03-27 — Phase 02 Plan 02 complete; config merge (Merge/LoadMerged) + validation (Validate/SuggestKey/NormalizeMountPermission)
 progress:
   total_phases: 10
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 5
-  completed_plans: 4
-  percent: 8
+  completed_plans: 5
+  percent: 80
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-26)
 
 **Core value:** Run `zone launch` in any repo and get a sandboxed Docker workspace for your LLM coding agent, with zero manual Docker configuration.
-**Current focus:** Phase 2 - Config Foundation (Plan 02 complete)
+**Current focus:** Phase 2 - Config Foundation (Plan 03 complete — phase done)
 
 ## Current Position
 
-Phase: 2 of 10 (Config Foundation) — in progress
-Plan: 2 of 3 in current phase (complete)
-Status: Phase 02 Plan 02 complete — merge algorithm + validation layer done
-Last activity: 2026-03-27 — Phase 02 Plan 02 complete; config merge (Merge/LoadMerged) + validation (Validate/SuggestKey/NormalizeMountPermission)
+Phase: 2 of 10 (Config Foundation) — complete
+Plan: 3 of 3 in current phase (complete)
+Status: Phase 02 Plan 03 complete — zone config + zone validate CLI commands wired, integration tests passing
+Last activity: 2026-03-27 — Phase 02 Plan 03 complete; zone config (annotated TOML + JSON) + zone validate (grouped errors, exit 2) + CFG-07/CFG-08 tests
 
-Progress: [████████░░] 80%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -53,6 +53,7 @@ Progress: [████████░░] 80%
 | Phase 01 P01 | 7 min | 2 tasks | 60 files |
 | Phase 01 P02 | 2 min | 2 tasks | 7 files |
 | Phase 02 P02 | 7min | 2 tasks | 5 files |
+| Phase 02 P03 | 4min | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -69,6 +70,9 @@ Recent decisions affecting current work:
 - [Phase 02-01]: Two-phase TOML decode for harness sugar (string vs table conflict); HarnessName toml:"-" pattern post-decode; explicit XDG path avoids macOS UserConfigDir() ~/Library pitfall; *bool fields for nullable booleans enable merge semantics
 - [Phase 02]: Section-aware Levenshtein uses lenient threshold for same-section bare comparisons; resolveSymlinkTarget() added for symlink detection when target doesn't exist
 - [Phase 02]: Bool pointer merging via block-scope temp variable: mergeBoolPtr returns bool, assigned as &v to *bool field in MergedConfig
+- [Phase 02]: renderAnnotatedTOML emits comment block above lists — inline TOML comments on array elements are invalid per spec pitfall 4
+- [Phase 02]: zone validate loads global + repo separately to accumulate UnknownKeysError alongside valid partial config
+- [Phase 02]: Integration tests use pre-built binary via sync.Once — avoids go run recompile per test
 
 ### Pending Todos
 
@@ -83,6 +87,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-27T07:16:40.620Z
-Stopped at: Completed 02-02-PLAN.md
+Last session: 2026-03-27T07:23:36.273Z
+Stopped at: Completed 02-03-PLAN.md
 Resume file: None

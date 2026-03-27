@@ -13,7 +13,7 @@ Zone is built in 10 focused phases ordered by the compiler-enforced dependency g
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Project Scaffold** - Go module, package skeleton, CI pipeline, and GoReleaser config (completed 2026-03-27)
-- [ ] **Phase 2: Config Foundation** - Two-tier TOML config, strict decode, merge strategy, validation
+- [x] **Phase 2: Config Foundation** - Two-tier TOML config, strict decode, merge strategy, validation (completed 2026-03-27)
 - [ ] **Phase 3: Cache & State** - .zone/ directory, config-hash tracking, file locking, build logs
 - [ ] **Phase 4: Template System** - Dockerfile/entrypoint/RC templates, go:embed, deterministic naming
 - [ ] **Phase 5: Harness Plugin System** - Interface, registry, claude-code impl, custom harness, stubs
@@ -161,7 +161,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Project Scaffold | 2/2 | Complete   | 2026-03-27 |
-| 2. Config Foundation | 2/3 | In Progress|  |
+| 2. Config Foundation | 3/3 | Complete   | 2026-03-27 |
 | 3. Cache & State | 0/TBD | Not started | - |
 | 4. Template System | 0/TBD | Not started | - |
 | 5. Harness Plugin System | 0/TBD | Not started | - |
