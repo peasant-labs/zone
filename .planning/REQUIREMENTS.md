@@ -33,10 +33,10 @@
 
 - [x] **CFG-01**: User can create a minimal zone.toml with just `version = 1` and `harness = "claude-code"`
 - [x] **CFG-02**: User can set global defaults in `~/.config/zone/config.toml` (XDG compliant)
-- [ ] **CFG-03**: Per-repo config overrides global for scalar fields
-- [ ] **CFG-04**: List fields merge correctly: packages union, network allow/deny append, extra_args append
-- [ ] **CFG-05**: Unknown config keys produce an error with edit-distance suggestions (Levenshtein)
-- [ ] **CFG-06**: Dangerous mount paths are blocked (docker.sock, /proc, /sys, ~/.ssh, cloud creds) with symlink resolution
+- [x] **CFG-03**: Per-repo config overrides global for scalar fields
+- [x] **CFG-04**: List fields merge correctly: packages union, network allow/deny append, extra_args append
+- [x] **CFG-05**: Unknown config keys produce an error with edit-distance suggestions (Levenshtein)
+- [x] **CFG-06**: Dangerous mount paths are blocked (docker.sock, /proc, /sys, ~/.ssh, cloud creds) with symlink resolution
 - [ ] **CFG-07**: `zone config` shows merged result with source annotations (global vs repo)
 - [ ] **CFG-08**: `zone config --json` outputs machine-readable merged config
 - [x] **CFG-09**: Config schema version field (`version = 1`) is validated on parse
@@ -49,7 +49,7 @@
 - [ ] **CFG-16**: Port forwarding from config (`ports = ["3000:3000"]`)
 - [ ] **CFG-17**: Resource limits from config (memory, cpus, pids_limit)
 - [ ] **CFG-18**: Hooks support (pre_build, post_stop shell commands)
-- [ ] **CFG-19**: Extra mounts default to read-only, require explicit `:rw` for write
+- [x] **CFG-19**: Extra mounts default to read-only, require explicit `:rw` for write
 - [ ] **CFG-20**: Persistent home volume via named Docker volume (survives container recreation)
 
 ### Harness System
@@ -189,10 +189,10 @@
 | CLI-21 | Phase 8 | Pending |
 | CFG-01 | Phase 2 | Complete |
 | CFG-02 | Phase 2 | Complete |
-| CFG-03 | Phase 2 | Pending |
-| CFG-04 | Phase 2 | Pending |
-| CFG-05 | Phase 2 | Pending |
-| CFG-06 | Phase 2 | Pending |
+| CFG-03 | Phase 2 | Complete |
+| CFG-04 | Phase 2 | Complete |
+| CFG-05 | Phase 2 | Complete |
+| CFG-06 | Phase 2 | Complete |
 | CFG-07 | Phase 2 | Pending |
 | CFG-08 | Phase 2 | Pending |
 | CFG-09 | Phase 2 | Complete |
@@ -205,7 +205,7 @@
 | CFG-16 | Phase 7 | Pending |
 | CFG-17 | Phase 7 | Pending |
 | CFG-18 | Phase 7 | Pending |
-| CFG-19 | Phase 2 | Pending |
+| CFG-19 | Phase 2 | Complete |
 | CFG-20 | Phase 6 | Pending |
 | HAR-01 | Phase 5 | Pending |
 | HAR-02 | Phase 5 | Pending |
