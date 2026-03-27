@@ -129,7 +129,7 @@
 - [ ] **DX-07**: `zone stop` cleanup: stop container, remove container, remove network, clear IDs from cache
 - [ ] **DX-08**: Command aliases: launch/up, stop/down, ls/list, logs/log, status/st
 - [ ] **DX-09**: Help text with 2-4 usage examples per command
-- [ ] **DX-10**: GoReleaser configuration for binary distribution
+- [x] **DX-10**: GoReleaser configuration for binary distribution
 
 ## v2 Requirements
 
@@ -267,7 +267,7 @@
 | DX-07 | Phase 8 | Pending |
 | DX-08 | Phase 8 | Pending |
 | DX-09 | Phase 8 | Pending |
-| DX-10 | Phase 1 | Pending |
+| DX-10 | Phase 1 | Complete |
 
 **Coverage:**
 - v1 requirements: 102 total
