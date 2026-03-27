@@ -49,7 +49,11 @@ Plans:
   3. An unknown config key produces an error message with a Levenshtein edit-distance suggestion
   4. A dangerous mount path (e.g., docker.sock) is blocked with a clear error including the resolved symlink
   5. `zone config` prints the merged config with each value annotated as global or repo source
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 02-01-PLAN.md — Config type structs, TOML parsing, dependency install
+- [ ] 02-02-PLAN.md — Two-tier merge algorithm, validation, Levenshtein, dangerous mounts, tests
+- [ ] 02-03-PLAN.md — Wire zone config and zone validate Cobra commands
 
 ### Phase 3: Cache & State
 **Goal**: Zone reliably tracks image/container/network IDs, detects config changes, and safely handles concurrent invocations
@@ -157,7 +161,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Project Scaffold | 2/2 | Complete   | 2026-03-27 |
-| 2. Config Foundation | 0/TBD | Not started | - |
+| 2. Config Foundation | 0/3 | Not started | - |
 | 3. Cache & State | 0/TBD | Not started | - |
 | 4. Template System | 0/TBD | Not started | - |
 | 5. Harness Plugin System | 0/TBD | Not started | - |
