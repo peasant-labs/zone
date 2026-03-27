@@ -2,8 +2,14 @@
 package tests
 
 import (
+	"bytes"
+	"errors"
+	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/peasant-labs/zone/internal/cache"
@@ -81,4 +87,155 @@ func TestCacheReadMissing(t *testing.T) {
 	id, err := c.ImageID()
 	require.NoError(t, err, "ImageID on fresh cache must not error")
 	assert.Equal(t, "", id, "ImageID on fresh cache must return empty string")
+}
+
+// ---------------------------------------------------------------------------
+// Lock tests
+// ---------------------------------------------------------------------------
+
+// TestLockAcquireRelease verifies basic acquire/release semantics and PID file creation.
+func TestLockAcquireRelease(t *testing.T) {
+	dir := t.TempDir()
+	zoneDir := filepath.Join(dir, ".zone")
+	require.NoError(t, os.MkdirAll(zoneDir, 0755))
+
+	l := cache.NewLock(zoneDir)
+	require.NoError(t, l.Acquire())
+	assert.True(t, l.IsHeld(), "lock should be held after Acquire")
+
+	// PID file should contain current process PID
+	pidData, err := os.ReadFile(filepath.Join(zoneDir, ".lock.pid"))
+	require.NoError(t, err, ".lock.pid must exist after Acquire")
+	pid, err := strconv.Atoi(strings.TrimSpace(string(pidData)))
+	require.NoError(t, err, ".lock.pid must contain a valid integer")
+	assert.Equal(t, os.Getpid(), pid, ".lock.pid should contain current process PID")
+
+	l.Release()
+	assert.False(t, l.IsHeld(), "lock should not be held after Release")
+}
+
+// TestLockDouble verifies that a second Acquire on the same dir returns ErrLockContention.
+func TestLockDouble(t *testing.T) {
+	dir := t.TempDir()
+	zoneDir := filepath.Join(dir, ".zone")
+	require.NoError(t, os.MkdirAll(zoneDir, 0755))
+
+	l1 := cache.NewLock(zoneDir)
+	require.NoError(t, l1.Acquire())
+	defer l1.Release()
+
+	l2 := cache.NewLock(zoneDir)
+	err := l2.Acquire()
+	require.Error(t, err, "second Acquire should return an error")
+	assert.True(t, errors.Is(err, cache.ErrLockContention), "error should wrap ErrLockContention")
+}
+
+// ---------------------------------------------------------------------------
+// Gitignore tests
+// ---------------------------------------------------------------------------
+
+// TestGitignoreCreation verifies that EnsureGitignore adds .zone/ to the git root .gitignore.
+func TestGitignoreCreation(t *testing.T) {
+	dir := t.TempDir()
+	require.NoError(t, exec.Command("git", "init", dir).Run())
+
+	require.NoError(t, cache.EnsureGitignore(dir))
+
+	data, err := os.ReadFile(filepath.Join(dir, ".gitignore"))
+	require.NoError(t, err, ".gitignore must exist after EnsureGitignore")
+	assert.Contains(t, string(data), ".zone/", ".gitignore should contain .zone/ entry")
+}
+
+// TestGitignoreIdempotent verifies that calling EnsureGitignore twice adds the entry exactly once.
+func TestGitignoreIdempotent(t *testing.T) {
+	dir := t.TempDir()
+	require.NoError(t, exec.Command("git", "init", dir).Run())
+
+	require.NoError(t, cache.EnsureGitignore(dir))
+	require.NoError(t, cache.EnsureGitignore(dir))
+
+	data, err := os.ReadFile(filepath.Join(dir, ".gitignore"))
+	require.NoError(t, err, ".gitignore must exist")
+
+	content := string(data)
+	lines := strings.Split(content, "\n")
+	count := 0
+	for _, line := range lines {
+		if strings.TrimSpace(line) == ".zone/" {
+			count++
+		}
+	}
+	assert.Equal(t, 1, count, ".zone/ should appear exactly once in .gitignore")
+}
+
+// ---------------------------------------------------------------------------
+// Build log tests
+// ---------------------------------------------------------------------------
+
+// TestBuildLogCreation verifies that CreateBuildLog writes header + body to the log file
+// and tees output to the provided writer.
+func TestBuildLogCreation(t *testing.T) {
+	c := cache.New(t.TempDir())
+	require.NoError(t, c.EnsureDir())
+
+	var buf bytes.Buffer
+	tee, closer, err := c.CreateBuildLog(&buf, "abc123", "1.0.0")
+	require.NoError(t, err)
+
+	_, _ = fmt.Fprint(tee, "build output here")
+	closer()
+
+	logData, err := os.ReadFile(filepath.Join(c.Dir(), "logs", "last_build.log"))
+	require.NoError(t, err, "last_build.log must exist after CreateBuildLog + closer")
+
+	content := string(logData)
+	assert.Contains(t, content, "# zone build |", "log should contain header prefix")
+	assert.Contains(t, content, "config hash: abc123", "log should contain config hash")
+	assert.Contains(t, content, "zone 1.0.0", "log should contain version")
+	assert.Contains(t, content, "build output here", "log should contain written body")
+
+	// tee must also forward output to the original writer
+	assert.Contains(t, buf.String(), "build output here", "tee must forward output to original writer")
+}
+
+// TestBuildLogHeader verifies the metadata header format in the build log.
+func TestBuildLogHeader(t *testing.T) {
+	c := cache.New(t.TempDir())
+	require.NoError(t, c.EnsureDir())
+
+	var buf bytes.Buffer
+	_, closer, err := c.CreateBuildLog(&buf, "deadbeef", "2.0.0")
+	require.NoError(t, err)
+	closer()
+
+	logData, err := os.ReadFile(filepath.Join(c.Dir(), "logs", "last_build.log"))
+	require.NoError(t, err)
+
+	headerLine := strings.SplitN(string(logData), "\n", 2)[0]
+	assert.True(t, strings.HasPrefix(headerLine, "# zone build |"), "header must start with '# zone build |'")
+	assert.Contains(t, headerLine, "config hash: deadbeef", "header must contain config hash value")
+	assert.Contains(t, headerLine, "zone 2.0.0", "header must contain version")
+	// RFC3339 timestamp should be present (contains T and + or Z)
+	assert.True(t, strings.Contains(headerLine, "T") && (strings.Contains(headerLine, "Z") || strings.Contains(headerLine, "+")),
+		"header must contain RFC3339 timestamp")
+}
+
+// ---------------------------------------------------------------------------
+// Integration test: zone clean command
+// ---------------------------------------------------------------------------
+
+// TestCleanCommand verifies that `zone clean` removes the .zone/ directory.
+func TestCleanCommand(t *testing.T) {
+	dir := t.TempDir()
+	// Create a .zone/ dir with a dummy file
+	zoneDir := filepath.Join(dir, ".zone")
+	require.NoError(t, os.MkdirAll(zoneDir, 0755))
+	require.NoError(t, os.WriteFile(filepath.Join(zoneDir, "test.txt"), []byte("data"), 0644))
+
+	stdout, stderr, exitCode := runZone(t, dir, os.Environ(), "clean")
+	require.Equal(t, 0, exitCode, "zone clean should exit 0; stderr: %s", stderr)
+
+	_, err := os.Stat(zoneDir)
+	assert.True(t, os.IsNotExist(err), ".zone/ directory must not exist after zone clean")
+	assert.Contains(t, stdout, "Removed .zone/ cache directory", "stdout should confirm removal")
 }
