@@ -2,7 +2,7 @@
 phase: 2
 slug: config-foundation
 status: draft
-nyquist_compliant: false
+nyquist_compliant: true
 wave_0_complete: true
 created: 2026-03-27
 ---
@@ -46,8 +46,8 @@ created: 2026-03-27
 | 02-02-01 | 02 | 1 | CFG-05 | unit | `go test ./tests/ -run TestUnknownKeySuggestion -v` | ✅ | ✅ green |
 | 02-02-02 | 02 | 1 | CFG-06 | unit | `go test ./tests/ -run TestDangerousMount -v` | ✅ | ✅ green |
 | 02-02-03 | 02 | 1 | CFG-19 | unit | `go test ./tests/ -run TestMountReadOnly -v` | ✅ | ✅ green |
-| 02-03-01 | 03 | 2 | CFG-07 | integration | `go test ./tests/ -run TestConfigAnnotatedOutput -v` | ❌ W0 | ⬜ pending |
-| 02-03-02 | 03 | 2 | CFG-08 | unit | `go test ./tests/ -run TestConfigJSON -v` | ❌ W0 | ⬜ pending |
+| 02-03-01 | 03 | 2 | CFG-07 | integration | `go test ./tests/ -run TestConfigAnnotatedOutput -v` | ✅ | ✅ green |
+| 02-03-02 | 03 | 2 | CFG-08 | unit | `go test ./tests/ -run TestConfigJSON -v` | ✅ | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -72,11 +72,11 @@ created: 2026-03-27
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 5s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references
+- [x] No watch-mode flags
+- [x] Feedback latency < 5s
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** signed off 2026-03-27
