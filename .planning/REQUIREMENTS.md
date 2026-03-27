@@ -113,10 +113,10 @@
 
 - [x] **CAC-01**: .zone/ directory stores config hash, Dockerfile, entrypoint, image/container/network IDs
 - [x] **CAC-02**: Cache hash includes merged config + templates + Zone version for automatic invalidation
-- [ ] **CAC-03**: File-based locking via flock for concurrent access protection
-- [ ] **CAC-04**: Lock contention produces error with exit code 5
-- [ ] **CAC-05**: `zone init` and `zone launch` add .zone/ to .gitignore
-- [ ] **CAC-06**: Build logs stored in .zone/logs/last_build.log
+- [x] **CAC-03**: File-based locking via flock for concurrent access protection
+- [x] **CAC-04**: Lock contention produces error with exit code 5
+- [x] **CAC-05**: `zone init` and `zone launch` add .zone/ to .gitignore
+- [x] **CAC-06**: Build logs stored in .zone/logs/last_build.log
 
 ### Developer Experience
 
@@ -254,10 +254,10 @@
 | TUI-07 | Phase 9 | Pending |
 | CAC-01 | Phase 3 | Complete |
 | CAC-02 | Phase 3 | Complete |
-| CAC-03 | Phase 3 | Pending |
-| CAC-04 | Phase 3 | Pending |
-| CAC-05 | Phase 3 | Pending |
-| CAC-06 | Phase 3 | Pending |
+| CAC-03 | Phase 3 | Complete |
+| CAC-04 | Phase 3 | Complete |
+| CAC-05 | Phase 3 | Complete |
+| CAC-06 | Phase 3 | Complete |
 | DX-01 | Phase 8 | Pending |
 | DX-02 | Phase 8 | Pending |
 | DX-03 | Phase 8 | Pending |

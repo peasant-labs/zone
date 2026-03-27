@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 03-cache-state-01-PLAN.md
-last_updated: "2026-03-27T19:21:19.306Z"
+stopped_at: Completed 03-cache-state-02-PLAN.md
+last_updated: "2026-03-27T19:26:08.520Z"
 last_activity: 2026-03-27 — Phase 02 Plan 03 complete; zone config (annotated TOML + JSON) + zone validate (grouped errors, exit 2) + CFG-07/CFG-08 tests
 progress:
   total_phases: 10
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 7
-  completed_plans: 6
+  completed_plans: 7
   percent: 100
 ---
 
@@ -55,6 +55,7 @@ Progress: [██████████] 100%
 | Phase 02 P02 | 7min | 2 tasks | 5 files |
 | Phase 02 P03 | 4min | 3 tasks | 6 files |
 | Phase 03-cache-state P01 | 8min | 3 tasks | 4 files |
+| Phase 03-cache-state P02 | 2min | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -77,6 +78,9 @@ Recent decisions affecting current work:
 - [Phase 03-01]: ComputeHash takes version as string param to avoid main.go import graph violation
 - [Phase 03-01]: readTrimmed returns ("", nil) for missing files — not-found is not an error
 - [Phase 03-01]: Hash includes only Dockerfile.tmpl + entrypoint.sh.tmpl per spec; zone-bashrc.tmpl excluded
+- [Phase 03-02]: zone clean warns but proceeds if lock held — avoids deadlock on crashed prior process
+- [Phase 03-02]: EnsureGitignore as standalone function — operates on cwd, independent of .zone/ existence
+- [Phase 03-02]: Stale lock: pid<=0 treated as stale — prevents permanent block from corrupted PID file
 
 ### Pending Todos
 
@@ -91,6 +95,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-27T19:21:19.304Z
-Stopped at: Completed 03-cache-state-01-PLAN.md
+Last session: 2026-03-27T19:26:08.517Z
+Stopped at: Completed 03-cache-state-02-PLAN.md
 Resume file: None
