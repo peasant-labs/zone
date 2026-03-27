@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: planning
-stopped_at: Completed 01-01-PLAN.md
-last_updated: "2026-03-27T01:20:20.242Z"
-last_activity: 2026-03-26 — Roadmap created; 10 phases derived from 102 v1 requirements
+status: in-progress
+stopped_at: Completed 01-02-PLAN.md
+last_updated: "2026-03-27T01:25:36Z"
+last_activity: 2026-03-27 — Phase 1 complete; GoReleaser v2, golangci-lint v2, Makefile, CI/release workflows configured
 progress:
   total_phases: 10
   completed_phases: 0
   total_plans: 2
-  completed_plans: 1
-  percent: 0
+  completed_plans: 2
+  percent: 5
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-26)
 
 **Core value:** Run `zone launch` in any repo and get a sandboxed Docker workspace for your LLM coding agent, with zero manual Docker configuration.
-**Current focus:** Phase 1 - Project Scaffold
+**Current focus:** Phase 1 - Project Scaffold (COMPLETE - both plans done)
 
 ## Current Position
 
-Phase: 1 of 10 (Project Scaffold)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-03-26 — Roadmap created; 10 phases derived from 102 v1 requirements
+Phase: 1 of 10 (Project Scaffold) — COMPLETE
+Plan: 2 of 2 in current phase
+Status: Phase 1 complete, ready for Phase 2
+Last activity: 2026-03-27 — Phase 1 complete; GoReleaser v2, golangci-lint v2, Makefile, CI/release workflows configured
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [█░░░░░░░░░] 5%
 
 ## Performance Metrics
 
@@ -50,7 +50,8 @@ Progress: [░░░░░░░░░░] 0%
 - Trend: -
 
 *Updated after each plan completion*
-| Phase 01 P01 | 7 | 2 tasks | 60 files |
+| Phase 01 P01 | 7 min | 2 tasks | 60 files |
+| Phase 01 P02 | 2 min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -63,6 +64,7 @@ Recent decisions affecting current work:
 - [Roadmap]: TUI deferred to Phase 9 (after lifecycle validated); network sandboxing deferred to Phase 10 (Linux-only, high complexity)
 - [Roadmap]: Phase 4 (Template System) and Phase 3 (Cache) are parallel to each other — both depend only on Phase 2
 - [Phase 01]: cobra v1.10.2 pinned exactly as specified; all 15 RunE stubs use exact string "not implemented" for Phase 8 integration test detection
+- [Phase 01-02]: homebrew_casks (not brews) per GoReleaser v2.10 deprecation; goreleaser snapshot in CI (not check) to actually cross-compile; cmd.SetVersion() pattern for ldflags vars; GORELEASER_CURRENT_TAG=v0.0.0-dev for untagged CI runs
 
 ### Pending Todos
 
@@ -77,6 +79,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-27T01:20:20.240Z
-Stopped at: Completed 01-01-PLAN.md
+Last session: 2026-03-27T01:25:36Z
+Stopped at: Completed 01-02-PLAN.md
 Resume file: None
