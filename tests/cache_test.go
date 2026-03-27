@@ -224,6 +224,43 @@ func TestBuildLogHeader(t *testing.T) {
 // Integration test: zone clean command
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Exit code sentinel tests
+// ---------------------------------------------------------------------------
+
+// TestExitCodeLockContentionSentinel verifies that errors returned by Lock.Acquire()
+// on contention are detectable via errors.Is(err, cache.ErrLockContention).
+// This is the precondition for main.go's exit code 5 mapping.
+// Full binary e2e test becomes possible once Phase 6 wires zone launch to call Lock.Acquire().
+func TestExitCodeLockContentionSentinel(t *testing.T) {
+	dir := t.TempDir()
+	zoneDir := filepath.Join(dir, ".zone")
+	require.NoError(t, os.MkdirAll(zoneDir, 0755))
+
+	l1 := cache.NewLock(zoneDir)
+	require.NoError(t, l1.Acquire())
+	defer l1.Release()
+
+	l2 := cache.NewLock(zoneDir)
+	err := l2.Acquire()
+	require.Error(t, err)
+
+	// This is the exact check main.go uses to decide exit code 5
+	assert.True(t, errors.Is(err, cache.ErrLockContention),
+		"errors.Is(err, cache.ErrLockContention) must be true for main.go exit code 5 mapping")
+}
+
+// TestExitCodeGenericError verifies that a generic error does NOT match ErrLockContention.
+func TestExitCodeGenericError(t *testing.T) {
+	genericErr := fmt.Errorf("something went wrong")
+	assert.False(t, errors.Is(genericErr, cache.ErrLockContention),
+		"generic errors must NOT match ErrLockContention")
+}
+
+// ---------------------------------------------------------------------------
+// Integration test: zone clean command
+// ---------------------------------------------------------------------------
+
 // TestCleanCommand verifies that `zone clean` removes the .zone/ directory.
 func TestCleanCommand(t *testing.T) {
 	dir := t.TempDir()
