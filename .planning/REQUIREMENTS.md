@@ -31,15 +31,15 @@
 
 ### Configuration
 
-- [ ] **CFG-01**: User can create a minimal zone.toml with just `version = 1` and `harness = "claude-code"`
-- [ ] **CFG-02**: User can set global defaults in `~/.config/zone/config.toml` (XDG compliant)
+- [x] **CFG-01**: User can create a minimal zone.toml with just `version = 1` and `harness = "claude-code"`
+- [x] **CFG-02**: User can set global defaults in `~/.config/zone/config.toml` (XDG compliant)
 - [ ] **CFG-03**: Per-repo config overrides global for scalar fields
 - [ ] **CFG-04**: List fields merge correctly: packages union, network allow/deny append, extra_args append
 - [ ] **CFG-05**: Unknown config keys produce an error with edit-distance suggestions (Levenshtein)
 - [ ] **CFG-06**: Dangerous mount paths are blocked (docker.sock, /proc, /sys, ~/.ssh, cloud creds) with symlink resolution
 - [ ] **CFG-07**: `zone config` shows merged result with source annotations (global vs repo)
 - [ ] **CFG-08**: `zone config --json` outputs machine-readable merged config
-- [ ] **CFG-09**: Config schema version field (`version = 1`) is validated on parse
+- [x] **CFG-09**: Config schema version field (`version = 1`) is validated on parse
 - [ ] **CFG-10**: Environment variable forwarding supports glob patterns (e.g., `AWS_*`)
 - [ ] **CFG-11**: Pre-launch validation checks required env vars are set before Docker build starts
 - [ ] **CFG-12**: SSH agent forwarding mounts socket when `forward_ssh_agent = true`
@@ -187,15 +187,15 @@
 | CLI-19 | Phase 8 | Pending |
 | CLI-20 | Phase 8 | Pending |
 | CLI-21 | Phase 8 | Pending |
-| CFG-01 | Phase 2 | Pending |
-| CFG-02 | Phase 2 | Pending |
+| CFG-01 | Phase 2 | Complete |
+| CFG-02 | Phase 2 | Complete |
 | CFG-03 | Phase 2 | Pending |
 | CFG-04 | Phase 2 | Pending |
 | CFG-05 | Phase 2 | Pending |
 | CFG-06 | Phase 2 | Pending |
 | CFG-07 | Phase 2 | Pending |
 | CFG-08 | Phase 2 | Pending |
-| CFG-09 | Phase 2 | Pending |
+| CFG-09 | Phase 2 | Complete |
 | CFG-10 | Phase 7 | Pending |
 | CFG-11 | Phase 7 | Pending |
 | CFG-12 | Phase 7 | Pending |

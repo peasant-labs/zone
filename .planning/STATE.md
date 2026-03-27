@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: completed
-stopped_at: Phase 2 context gathered
-last_updated: "2026-03-27T05:01:43.520Z"
-last_activity: 2026-03-27 — Phase 1 complete; GoReleaser v2, golangci-lint v2, Makefile, CI/release workflows configured
+status: in-progress
+stopped_at: "Phase 02 Plan 01 complete"
+last_updated: "2026-03-27T07:04:10Z"
+last_activity: 2026-03-27 — Phase 02 Plan 01 complete; typed config structs + TOML parsing for per-repo and global config
 progress:
   total_phases: 10
   completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
-  percent: 5
+  total_plans: 3
+  completed_plans: 3
+  percent: 8
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-26)
 
 **Core value:** Run `zone launch` in any repo and get a sandboxed Docker workspace for your LLM coding agent, with zero manual Docker configuration.
-**Current focus:** Phase 1 - Project Scaffold (COMPLETE - both plans done)
+**Current focus:** Phase 2 - Config Foundation (Plan 01 complete)
 
 ## Current Position
 
-Phase: 1 of 10 (Project Scaffold) — COMPLETE
-Plan: 2 of 2 in current phase
-Status: Phase 1 complete, ready for Phase 2
-Last activity: 2026-03-27 — Phase 1 complete; GoReleaser v2, golangci-lint v2, Makefile, CI/release workflows configured
+Phase: 2 of 10 (Config Foundation) — in progress
+Plan: 1 of 3 in current phase (complete)
+Status: Phase 02 Plan 01 complete — typed config structs + TOML parsing done
+Last activity: 2026-03-27 — Phase 02 Plan 01 complete; typed config structs + TOML parsing for per-repo and global config
 
-Progress: [█░░░░░░░░░] 5%
+Progress: [█░░░░░░░░░] 8%
 
 ## Performance Metrics
 
@@ -65,6 +65,7 @@ Recent decisions affecting current work:
 - [Roadmap]: Phase 4 (Template System) and Phase 3 (Cache) are parallel to each other — both depend only on Phase 2
 - [Phase 01]: cobra v1.10.2 pinned exactly as specified; all 15 RunE stubs use exact string "not implemented" for Phase 8 integration test detection
 - [Phase 01-02]: homebrew_casks (not brews) per GoReleaser v2.10 deprecation; goreleaser snapshot in CI (not check) to actually cross-compile; cmd.SetVersion() pattern for ldflags vars; GORELEASER_CURRENT_TAG=v0.0.0-dev for untagged CI runs
+- [Phase 02-01]: Two-phase TOML decode for harness sugar (string vs table conflict); HarnessName toml:"-" pattern post-decode; explicit XDG path avoids macOS UserConfigDir() ~/Library pitfall; *bool fields for nullable booleans enable merge semantics
 
 ### Pending Todos
 
@@ -79,6 +80,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-27T05:01:43.514Z
-Stopped at: Phase 2 context gathered
-Resume file: .planning/phases/02-config-foundation/02-CONTEXT.md
+Last session: 2026-03-27T07:04:10Z
+Stopped at: "Completed 02-01-PLAN.md"
+Resume file: .planning/phases/02-config-foundation/02-02-PLAN.md
