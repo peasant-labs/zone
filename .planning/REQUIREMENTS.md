@@ -9,9 +9,9 @@
 
 - [ ] **CLI-01**: User can run `zone init` to scaffold a `zone.toml` in the current directory with interactive harness selection
 - [ ] **CLI-02**: User can run `zone init --harness <name>` to scaffold non-interactively
-- [ ] **CLI-03**: User can run `zone launch` to build (if needed) and attach to a container for this repo
-- [ ] **CLI-04**: User can run `zone launch --headless -p "task"` to run a detached agent with a prompt
-- [ ] **CLI-05**: User can run `zone launch --harness <name>` with no zone.toml for zero-config quickstart
+- [x] **CLI-03**: User can run `zone launch` to build (if needed) and attach to a container for this repo
+- [x] **CLI-04**: User can run `zone launch --headless -p "task"` to run a detached agent with a prompt
+- [x] **CLI-05**: User can run `zone launch --harness <name>` with no zone.toml for zero-config quickstart
 - [ ] **CLI-06**: User can run `zone join` to attach a new shell to a running container without re-running the harness
 - [ ] **CLI-07**: User can run `zone exec -- <cmd>` to run a one-off command inside the running container
 - [ ] **CLI-08**: User can run `zone shell` to open an interactive shell even if no harness is running
@@ -75,8 +75,8 @@
 - [x] **DOC-06**: Container created with `no-new-privileges`, capability dropping, pids limit
 - [x] **DOC-07**: Deterministic container naming from repo absolute path (hash-based)
 - [x] **DOC-08**: Docker labels applied for discovery by `zone ls`
-- [ ] **DOC-09**: Idempotent launch: reattach if running, handle paused/exited/dead/stale states
-- [ ] **DOC-10**: Config change detection warns user to restart when config hash differs
+- [x] **DOC-09**: Idempotent launch: reattach if running, handle paused/exited/dead/stale states
+- [x] **DOC-10**: Config change detection warns user to restart when config hash differs
 - [x] **DOC-11**: Docker SDK used for build/create/start/stop/inspect; context propagation for graceful cancel
 - [x] **DOC-12**: Build progress streamed from Docker SDK with proper response body cleanup
 - [x] **DOC-13**: Git safe.directory configured in entrypoint for workspace mount
@@ -168,9 +168,9 @@
 |-------------|-------|--------|
 | CLI-01 | Phase 8 | Pending |
 | CLI-02 | Phase 8 | Pending |
-| CLI-03 | Phase 6 | Pending |
-| CLI-04 | Phase 6 | Pending |
-| CLI-05 | Phase 6 | Pending |
+| CLI-03 | Phase 6 | Complete |
+| CLI-04 | Phase 6 | Complete |
+| CLI-05 | Phase 6 | Complete |
 | CLI-06 | Phase 6 | Pending |
 | CLI-07 | Phase 6 | Pending |
 | CLI-08 | Phase 6 | Pending |
@@ -225,8 +225,8 @@
 | DOC-06 | Phase 4 | Complete |
 | DOC-07 | Phase 4 | Complete |
 | DOC-08 | Phase 6 | Complete |
-| DOC-09 | Phase 6 | Pending |
-| DOC-10 | Phase 6 | Pending |
+| DOC-09 | Phase 6 | Complete |
+| DOC-10 | Phase 6 | Complete |
 | DOC-11 | Phase 6 | Complete |
 | DOC-12 | Phase 6 | Complete |
 | DOC-13 | Phase 4 | Complete |

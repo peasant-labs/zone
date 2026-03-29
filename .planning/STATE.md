@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: verifying
-stopped_at: Completed 06-01-PLAN.md
-last_updated: "2026-03-29T22:46:32.219Z"
+stopped_at: Completed 06-02-PLAN.md
+last_updated: "2026-03-29T22:52:22.395Z"
 last_activity: 2026-03-29
 progress:
   total_phases: 10
   completed_phases: 5
   total_plans: 17
-  completed_plans: 14
+  completed_plans: 15
   percent: 100
 ---
 
@@ -65,6 +65,7 @@ Progress: [██████████] 100%
 | Phase 05-harness-plugin-system P02 | 3 | 1 tasks | 7 files |
 | Phase 05-harness-plugin-system P03 | 1min | 1 tasks | 2 files |
 | Phase 06 P01 | 5min | 2 tasks | 9 files |
+| Phase 06-docker-lifecycle-core P02 | 4min | 1 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -104,6 +105,8 @@ Recent decisions affecting current work:
 - [Phase 06]: DockerClient interface wraps SDK for testability — newManagerWithClient() accepts mock in tests
 - [Phase 06]: go mod tidy removes deps without importers — write source files before tidying when adding new imports
 - [Phase 06]: errdefs.IsNotFound() used to swallow expected network/container not-found errors in removeNetwork
+- [Phase 06]: attachFn field on Manager enables test injection without build tags or interface wrapping
+- [Phase 06]: Lock NOT deferred — explicitly released before attachInteractive so zone join can connect concurrently
 
 ### Pending Todos
 
@@ -118,6 +121,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-29T22:46:32.216Z
-Stopped at: Completed 06-01-PLAN.md
+Last session: 2026-03-29T22:52:22.391Z
+Stopped at: Completed 06-02-PLAN.md
 Resume file: None
