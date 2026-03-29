@@ -50,7 +50,7 @@
 - [ ] **CFG-17**: Resource limits from config (memory, cpus, pids_limit)
 - [ ] **CFG-18**: Hooks support (pre_build, post_stop shell commands)
 - [x] **CFG-19**: Extra mounts default to read-only, require explicit `:rw` for write
-- [ ] **CFG-20**: Persistent home volume via named Docker volume (survives container recreation)
+- [x] **CFG-20**: Persistent home volume via named Docker volume (survives container recreation)
 
 ### Harness System
 
@@ -74,11 +74,11 @@
 - [x] **DOC-05**: Sudo scoped to package managers only (apt-get, pip, npm)
 - [x] **DOC-06**: Container created with `no-new-privileges`, capability dropping, pids limit
 - [x] **DOC-07**: Deterministic container naming from repo absolute path (hash-based)
-- [ ] **DOC-08**: Docker labels applied for discovery by `zone ls`
+- [x] **DOC-08**: Docker labels applied for discovery by `zone ls`
 - [ ] **DOC-09**: Idempotent launch: reattach if running, handle paused/exited/dead/stale states
 - [ ] **DOC-10**: Config change detection warns user to restart when config hash differs
-- [ ] **DOC-11**: Docker SDK used for build/create/start/stop/inspect; context propagation for graceful cancel
-- [ ] **DOC-12**: Build progress streamed from Docker SDK with proper response body cleanup
+- [x] **DOC-11**: Docker SDK used for build/create/start/stop/inspect; context propagation for graceful cancel
+- [x] **DOC-12**: Build progress streamed from Docker SDK with proper response body cleanup
 - [x] **DOC-13**: Git safe.directory configured in entrypoint for workspace mount
 - [x] **DOC-14**: Git user.name and user.email forwarded from host
 - [x] **DOC-15**: macOS username symlink compatibility in Dockerfile
@@ -206,7 +206,7 @@
 | CFG-17 | Phase 7 | Pending |
 | CFG-18 | Phase 7 | Pending |
 | CFG-19 | Phase 2 | Complete |
-| CFG-20 | Phase 6 | Pending |
+| CFG-20 | Phase 6 | Complete |
 | HAR-01 | Phase 5 | Complete |
 | HAR-02 | Phase 5 | Complete |
 | HAR-03 | Phase 5 | Complete |
@@ -224,11 +224,11 @@
 | DOC-05 | Phase 4 | Complete |
 | DOC-06 | Phase 4 | Complete |
 | DOC-07 | Phase 4 | Complete |
-| DOC-08 | Phase 6 | Pending |
+| DOC-08 | Phase 6 | Complete |
 | DOC-09 | Phase 6 | Pending |
 | DOC-10 | Phase 6 | Pending |
-| DOC-11 | Phase 6 | Pending |
-| DOC-12 | Phase 6 | Pending |
+| DOC-11 | Phase 6 | Complete |
+| DOC-12 | Phase 6 | Complete |
 | DOC-13 | Phase 4 | Complete |
 | DOC-14 | Phase 4 | Complete |
 | DOC-15 | Phase 4 | Complete |
