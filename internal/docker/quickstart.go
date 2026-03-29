@@ -36,16 +36,22 @@ func generateMinimalZoneToml(harness string) string {
 	return fmt.Sprintf(minimalZoneTomlTemplate, harness)
 }
 
-// handleZeroConfig generates a minimal zone.toml in the repo directory and
+// HandleZeroConfig generates a minimal zone.toml in the repo directory and
 // ensures the .zone/ directory is listed in .gitignore.
 // Called by the CLI when --harness is provided but no zone.toml exists.
-func (m *Manager) handleZeroConfig(harnessName string) error {
-	tomlPath := filepath.Join(m.repoDir, "zone.toml")
+func (m *Manager) HandleZeroConfig(harnessName string) error {
+	return QuickstartWriteZoneToml(m.repoDir, harnessName)
+}
+
+// QuickstartWriteZoneToml writes a minimal zone.toml to repoDir for harnessName
+// and ensures .zone/ is listed in .gitignore. Does not require a live Docker daemon.
+func QuickstartWriteZoneToml(repoDir, harnessName string) error {
+	tomlPath := filepath.Join(repoDir, "zone.toml")
 	content := generateMinimalZoneToml(harnessName)
 	if err := os.WriteFile(tomlPath, []byte(content), 0644); err != nil {
 		return fmt.Errorf("write zone.toml: %w", err)
 	}
-	if err := cache.EnsureGitignore(m.repoDir); err != nil {
+	if err := cache.EnsureGitignore(repoDir); err != nil {
 		return fmt.Errorf("update gitignore: %w", err)
 	}
 	fmt.Fprintf(os.Stderr, "Created zone.toml with harness %q\n", harnessName)

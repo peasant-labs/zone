@@ -4,6 +4,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// version is the zone binary version string, set from main via SetVersion.
+// Defaults to "dev" when not injected via ldflags.
+var version = "dev"
+
 var rootCmd = &cobra.Command{
 	Use:   "zone",
 	Short: "Sandboxed Docker workspaces for LLM coding agents",
@@ -11,8 +15,9 @@ var rootCmd = &cobra.Command{
 }
 
 // SetVersion sets the version string on the root command, injected from main via ldflags.
-func SetVersion(version, commit, date string) {
-	rootCmd.Version = version + " (" + commit + ") built " + date
+func SetVersion(v, commit, date string) {
+	version = v
+	rootCmd.Version = v + " (" + commit + ") built " + date
 }
 
 // Execute runs the root command and returns any error.
