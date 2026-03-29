@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: verifying
-stopped_at: Completed 06-03-PLAN.md
-last_updated: "2026-03-29T22:56:01.911Z"
+stopped_at: Completed 06-04-PLAN.md
+last_updated: "2026-03-29T23:02:23.142Z"
 last_activity: 2026-03-29
 progress:
   total_phases: 10
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 17
-  completed_plans: 16
+  completed_plans: 17
   percent: 100
 ---
 
@@ -67,6 +67,7 @@ Progress: [██████████] 100%
 | Phase 06 P01 | 5min | 2 tasks | 9 files |
 | Phase 06-docker-lifecycle-core P02 | 4min | 1 tasks | 4 files |
 | Phase 06-docker-lifecycle-core P03 | 2min | 1 tasks | 2 files |
+| Phase 06-docker-lifecycle-core P04 | 4min | 2 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -111,6 +112,9 @@ Recent decisions affecting current work:
 - [Phase 06-03]: Stop retains image_id in cache — allows zone launch after stop to skip rebuild
 - [Phase 06-03]: Destroy calls Stop as first step — avoids code duplication for container/network cleanup
 - [Phase 06-03]: RemoveImage is standalone (not part of Stop) — maps to zone clean --image, orthogonal to stop lifecycle
+- [Phase 06-04]: QuickstartWriteZoneToml extracted as standalone — zero-config path (zone launch --harness) must not fail when Docker is not running yet
+- [Phase 06-04]: var version in cmd/root.go initialized to 'dev' — threaded from ldflags via SetVersion into NewManager for template rendering
+- [Phase 06-04]: Manager.Join validates container running state; Manager.Exec/Shell only check container ID exists — explicit failure on Exec is acceptable
 
 ### Pending Todos
 
@@ -125,6 +129,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-29T22:56:01.905Z
-Stopped at: Completed 06-03-PLAN.md
+Last session: 2026-03-29T23:02:23.140Z
+Stopped at: Completed 06-04-PLAN.md
 Resume file: None

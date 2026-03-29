@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 3: Cache & State** - .zone/ directory, config-hash tracking, file locking, build logs
 - [x] **Phase 4: Template System** - Dockerfile/entrypoint/RC templates, go:embed, deterministic naming (completed 2026-03-29)
 - [x] **Phase 5: Harness Plugin System** - Interface, registry, claude-code impl, custom harness, stubs (completed 2026-03-29)
-- [ ] **Phase 6: Docker Lifecycle Core** - Idempotent build/launch/stop/destroy, security hardening
+- [x] **Phase 6: Docker Lifecycle Core** - Idempotent build/launch/stop/destroy, security hardening (completed 2026-03-29)
 - [ ] **Phase 7: Environment, Auth & Forwarding** - Env vars, SSH agent, auth copy, proxy, ports, hooks
 - [ ] **Phase 8: CLI Commands & DX** - All commands wired, exit codes, signals, JSON output, aliases
 - [ ] **Phase 9: TUI Layer** - BubbleTea init wizard, build progress, status view, log viewer
@@ -117,7 +117,7 @@ Plans:
 - [x] 06-01-PLAN.md — Docker SDK install, client interface, Manager constructor, build pipeline, network, container creation
 - [x] 06-02-PLAN.md — Launch state machine, config change detection, headless mode, zero-config quickstart
 - [x] 06-03-PLAN.md — Stop, Destroy, RemoveImage cleanup methods
-- [ ] 06-04-PLAN.md — Wire all 8 Cobra commands (launch, join, exec, shell, build, stop, restart, destroy)
+- [x] 06-04-PLAN.md — Wire all 8 Cobra commands (launch, join, exec, shell, build, stop, restart, destroy)
 
 ### Phase 7: Environment, Auth & Forwarding
 **Goal**: Secrets, credentials, and runtime configuration reach the container correctly without being persisted in the image
@@ -181,7 +181,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 3. Cache & State | 2/3 | In Progress|  |
 | 4. Template System | 2/2 | Complete   | 2026-03-29 |
 | 5. Harness Plugin System | 3/3 | Complete   | 2026-03-29 |
-| 6. Docker Lifecycle Core | 3/4 | In Progress|  |
+| 6. Docker Lifecycle Core | 4/4 | Complete   | 2026-03-29 |
 | 7. Environment, Auth & Forwarding | 0/TBD | Not started | - |
 | 8. CLI Commands & DX | 0/TBD | Not started | - |
 | 9. TUI Layer | 0/TBD | Not started | - |

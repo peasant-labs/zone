@@ -12,12 +12,12 @@
 - [x] **CLI-03**: User can run `zone launch` to build (if needed) and attach to a container for this repo
 - [x] **CLI-04**: User can run `zone launch --headless -p "task"` to run a detached agent with a prompt
 - [x] **CLI-05**: User can run `zone launch --harness <name>` with no zone.toml for zero-config quickstart
-- [ ] **CLI-06**: User can run `zone join` to attach a new shell to a running container without re-running the harness
-- [ ] **CLI-07**: User can run `zone exec -- <cmd>` to run a one-off command inside the running container
-- [ ] **CLI-08**: User can run `zone shell` to open an interactive shell even if no harness is running
-- [ ] **CLI-09**: User can run `zone build` to force-rebuild the Docker image without launching
+- [x] **CLI-06**: User can run `zone join` to attach a new shell to a running container without re-running the harness
+- [x] **CLI-07**: User can run `zone exec -- <cmd>` to run a one-off command inside the running container
+- [x] **CLI-08**: User can run `zone shell` to open an interactive shell even if no harness is running
+- [x] **CLI-09**: User can run `zone build` to force-rebuild the Docker image without launching
 - [x] **CLI-10**: User can run `zone stop` to stop and remove the container and network, retaining cache
-- [ ] **CLI-11**: User can run `zone restart` to stop and relaunch the container
+- [x] **CLI-11**: User can run `zone restart` to stop and relaunch the container
 - [ ] **CLI-12**: User can run `zone ls` to list all zone containers across all repos
 - [ ] **CLI-13**: User can run `zone logs` to view harness output, with `--follow` for live tailing
 - [ ] **CLI-14**: User can run `zone logs --build` to view the last Docker build log
@@ -171,12 +171,12 @@
 | CLI-03 | Phase 6 | Complete |
 | CLI-04 | Phase 6 | Complete |
 | CLI-05 | Phase 6 | Complete |
-| CLI-06 | Phase 6 | Pending |
-| CLI-07 | Phase 6 | Pending |
-| CLI-08 | Phase 6 | Pending |
-| CLI-09 | Phase 6 | Pending |
+| CLI-06 | Phase 6 | Complete |
+| CLI-07 | Phase 6 | Complete |
+| CLI-08 | Phase 6 | Complete |
+| CLI-09 | Phase 6 | Complete |
 | CLI-10 | Phase 6 | Complete |
-| CLI-11 | Phase 6 | Pending |
+| CLI-11 | Phase 6 | Complete |
 | CLI-12 | Phase 8 | Pending |
 | CLI-13 | Phase 8 | Pending |
 | CLI-14 | Phase 8 | Pending |
