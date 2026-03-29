@@ -95,7 +95,11 @@ Plans:
   3. `zone launch` with `harness = "aider"` (or other stub) fails with a descriptive "not yet implemented" error
   4. An unknown harness-specific config key produces a per-harness validation error, not a generic parse error
   5. `zone launch -- -p "write tests"` passes the prompt flag through to the harness automatically
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 05-01-PLAN.md — Harness interface, BaseHarness, registry, Get(), ClaudeCode full implementation
+- [ ] 05-02-PLAN.md — Stub harnesses (opencode, gemini-cli, aider, codex-cli), custom harness, per-harness validation
+- [ ] 05-03-PLAN.md — Bridge functions (BuildDockerfileData, BuildEntrypointData, BuildShellRCData)
 
 ### Phase 6: Docker Lifecycle Core
 **Goal**: Users can launch, reattach, stop, restart, and destroy containers with full idempotency and security hardening
@@ -171,7 +175,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 2. Config Foundation | 3/3 | Complete   | 2026-03-27 |
 | 3. Cache & State | 2/3 | In Progress|  |
 | 4. Template System | 2/2 | Complete   | 2026-03-29 |
-| 5. Harness Plugin System | 0/TBD | Not started | - |
+| 5. Harness Plugin System | 0/3 | Not started | - |
 | 6. Docker Lifecycle Core | 0/TBD | Not started | - |
 | 7. Environment, Auth & Forwarding | 0/TBD | Not started | - |
 | 8. CLI Commands & DX | 0/TBD | Not started | - |
