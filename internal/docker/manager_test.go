@@ -41,6 +41,8 @@ type mockClient struct {
 	imageBuildErr    error
 	imageInspectResp types.ImageInspect
 	imageInspectErr  error
+	imageRemoveErr   error
+	volumeRemoveErr  error
 
 	// Launch state machine fields
 	containerInspectResp container.InspectResponse
@@ -50,11 +52,13 @@ type mockClient struct {
 	containerStopErr     error
 
 	// Track calls for assertion
-	unpauseCalled  bool
-	removeCalled   bool
-	stopCalled     bool
-	startCalled    bool
-	startedIDs     []string
+	unpauseCalled    bool
+	removeCalled     bool
+	stopCalled       bool
+	startCalled      bool
+	startedIDs       []string
+	imageRemovedIDs  []string
+	volumeRemovedIDs []string
 }
 
 func (m *mockClient) Ping(ctx context.Context) (types.Ping, error) {
@@ -70,7 +74,8 @@ func (m *mockClient) ImageInspectWithRaw(ctx context.Context, imageID string) (t
 }
 
 func (m *mockClient) ImageRemove(ctx context.Context, imageID string, options image.RemoveOptions) ([]image.DeleteResponse, error) {
-	return nil, nil
+	m.imageRemovedIDs = append(m.imageRemovedIDs, imageID)
+	return nil, m.imageRemoveErr
 }
 
 func (m *mockClient) ContainerCreate(ctx context.Context, cfg *container.Config, hostConfig *container.HostConfig, networkingConfig *network.NetworkingConfig, platform *ocispec.Platform, containerName string) (container.CreateResponse, error) {
@@ -115,7 +120,8 @@ func (m *mockClient) VolumeCreate(ctx context.Context, options volume.CreateOpti
 }
 
 func (m *mockClient) VolumeRemove(ctx context.Context, volumeID string, force bool) error {
-	return nil
+	m.volumeRemovedIDs = append(m.volumeRemovedIDs, volumeID)
+	return m.volumeRemoveErr
 }
 
 func (m *mockClient) Close() error {
@@ -654,4 +660,204 @@ func TestGenerateMinimalZoneToml(t *testing.T) {
 // computeTestHash is a helper to get the current config hash for a manager.
 func computeTestHash(m *Manager) (string, error) {
 	return cache.ComputeHash(m.config, m.version)
+}
+
+// --- Stop / Destroy / RemoveImage Tests ---
+
+// TestStop_RunningContainer verifies that Stop calls ContainerStop, ContainerRemove,
+// removeNetwork, clears container_id and network_id, and retains image_id.
+func TestStop_RunningContainer(t *testing.T) {
+	mc := &mockClient{}
+	cfg := newDefaultConfig()
+	m, _ := newTestManager(t, mc, cfg)
+
+	require.NoError(t, m.cache.EnsureDir())
+	require.NoError(t, m.cache.SetContainerID("container-abc"))
+	require.NoError(t, m.cache.SetNetworkID("net-xyz"))
+	require.NoError(t, m.cache.SetImageID("sha256:imageabc"))
+
+	err := m.Stop(context.Background())
+	require.NoError(t, err)
+
+	// Verify ContainerStop and ContainerRemove were called
+	assert.True(t, mc.stopCalled, "ContainerStop should be called")
+	assert.True(t, mc.removeCalled, "ContainerRemove should be called")
+
+	// Verify container_id and network_id are cleared
+	cid, _ := m.cache.ContainerID()
+	assert.Empty(t, cid, "container_id should be cleared after Stop")
+	nid, _ := m.cache.NetworkID()
+	assert.Empty(t, nid, "network_id should be cleared after Stop")
+
+	// Verify image_id is NOT cleared
+	iid, _ := m.cache.ImageID()
+	assert.Equal(t, "sha256:imageabc", iid, "image_id should be retained after Stop")
+}
+
+// TestStop_NoContainer verifies that Stop is a no-op when container_id is empty.
+func TestStop_NoContainer(t *testing.T) {
+	mc := &mockClient{}
+	cfg := newDefaultConfig()
+	m, _ := newTestManager(t, mc, cfg)
+
+	require.NoError(t, m.cache.EnsureDir())
+	// No container_id set
+
+	err := m.Stop(context.Background())
+	require.NoError(t, err)
+
+	// Verify no Docker client calls were made
+	assert.False(t, mc.stopCalled, "ContainerStop should NOT be called when no container")
+	assert.False(t, mc.removeCalled, "ContainerRemove should NOT be called when no container")
+}
+
+// TestStop_ContainerNotFound verifies that a NotFound error from ContainerStop is swallowed,
+// Stop still returns nil and clears the cache.
+func TestStop_ContainerNotFound(t *testing.T) {
+	mc := &mockClient{
+		containerStopErr: errdefs.NotFound(errors.New("no such container")),
+	}
+	cfg := newDefaultConfig()
+	m, _ := newTestManager(t, mc, cfg)
+
+	require.NoError(t, m.cache.EnsureDir())
+	require.NoError(t, m.cache.SetContainerID("container-ghost"))
+	require.NoError(t, m.cache.SetNetworkID("net-xyz"))
+
+	err := m.Stop(context.Background())
+	require.NoError(t, err, "Stop should return nil when ContainerStop returns NotFound")
+
+	// Cache should still be cleared
+	cid, _ := m.cache.ContainerID()
+	assert.Empty(t, cid, "container_id should be cleared even when container was not found")
+}
+
+// TestDestroy_Full verifies that Destroy calls Stop, ImageRemove, VolumeRemove, and cache.Clean().
+func TestDestroy_Full(t *testing.T) {
+	mc := &mockClient{}
+	cfg := newDefaultConfig()
+	m, _ := newTestManager(t, mc, cfg)
+
+	require.NoError(t, m.cache.EnsureDir())
+	require.NoError(t, m.cache.SetContainerID("container-abc"))
+	require.NoError(t, m.cache.SetNetworkID("net-xyz"))
+	require.NoError(t, m.cache.SetImageID("sha256:imageabc"))
+
+	err := m.Destroy(context.Background())
+	require.NoError(t, err)
+
+	// Verify Stop was called (container removed)
+	assert.True(t, mc.stopCalled, "ContainerStop should be called by Destroy")
+	assert.True(t, mc.removeCalled, "ContainerRemove should be called by Destroy")
+
+	// Verify ImageRemove was called with correct image ID
+	require.Len(t, mc.imageRemovedIDs, 1, "ImageRemove should be called once")
+	assert.Equal(t, "sha256:imageabc", mc.imageRemovedIDs[0])
+
+	// Verify VolumeRemove was called with zone-home-<hash>
+	require.Len(t, mc.volumeRemovedIDs, 1, "VolumeRemove should be called once")
+	assert.True(t, strings.HasPrefix(mc.volumeRemovedIDs[0], "zone-home-"),
+		"VolumeRemove should be called with zone-home-<hash> volume name")
+
+	// Verify cache was cleaned (cache dir should not exist)
+	_, err = os.Stat(m.cache.Dir())
+	assert.True(t, os.IsNotExist(err), "cache directory should be removed after Destroy")
+}
+
+// TestDestroy_NoContainer verifies that Destroy still removes image, volume, and cache
+// even when no container is running.
+func TestDestroy_NoContainer(t *testing.T) {
+	mc := &mockClient{}
+	cfg := newDefaultConfig()
+	m, _ := newTestManager(t, mc, cfg)
+
+	require.NoError(t, m.cache.EnsureDir())
+	// No container_id — but image_id is set
+	require.NoError(t, m.cache.SetImageID("sha256:imageabc"))
+
+	err := m.Destroy(context.Background())
+	require.NoError(t, err)
+
+	// ContainerStop should NOT be called (no container)
+	assert.False(t, mc.stopCalled, "ContainerStop should NOT be called when no container")
+
+	// ImageRemove should still be called
+	require.Len(t, mc.imageRemovedIDs, 1, "ImageRemove should be called even without container")
+	assert.Equal(t, "sha256:imageabc", mc.imageRemovedIDs[0])
+
+	// VolumeRemove should still be called
+	require.Len(t, mc.volumeRemovedIDs, 1, "VolumeRemove should be called even without container")
+
+	// Cache dir removed
+	_, err = os.Stat(m.cache.Dir())
+	assert.True(t, os.IsNotExist(err), "cache directory should be removed after Destroy")
+}
+
+// TestDestroyVsStop_VolumeRetention verifies that Stop does NOT call VolumeRemove
+// but Destroy DOES call VolumeRemove.
+func TestDestroyVsStop_VolumeRetention(t *testing.T) {
+	// Test Stop: volume NOT removed
+	t.Run("Stop does not remove volume", func(t *testing.T) {
+		mc := &mockClient{}
+		cfg := newDefaultConfig()
+		m, _ := newTestManager(t, mc, cfg)
+		require.NoError(t, m.cache.EnsureDir())
+		require.NoError(t, m.cache.SetContainerID("container-abc"))
+
+		err := m.Stop(context.Background())
+		require.NoError(t, err)
+
+		assert.Empty(t, mc.volumeRemovedIDs, "Stop should NOT call VolumeRemove")
+	})
+
+	// Test Destroy: volume IS removed
+	t.Run("Destroy removes volume", func(t *testing.T) {
+		mc := &mockClient{}
+		cfg := newDefaultConfig()
+		m, _ := newTestManager(t, mc, cfg)
+		require.NoError(t, m.cache.EnsureDir())
+		require.NoError(t, m.cache.SetContainerID("container-abc"))
+
+		err := m.Destroy(context.Background())
+		require.NoError(t, err)
+
+		assert.NotEmpty(t, mc.volumeRemovedIDs, "Destroy should call VolumeRemove")
+	})
+}
+
+// TestRemoveImage verifies that RemoveImage calls ImageRemove with the cached image ID
+// and clears the image_id from cache afterward.
+func TestRemoveImage(t *testing.T) {
+	mc := &mockClient{}
+	cfg := newDefaultConfig()
+	m, _ := newTestManager(t, mc, cfg)
+
+	require.NoError(t, m.cache.EnsureDir())
+	require.NoError(t, m.cache.SetImageID("sha256:removetest"))
+
+	err := m.RemoveImage(context.Background())
+	require.NoError(t, err)
+
+	// Verify ImageRemove was called with the correct image ID
+	require.Len(t, mc.imageRemovedIDs, 1, "ImageRemove should be called once")
+	assert.Equal(t, "sha256:removetest", mc.imageRemovedIDs[0])
+
+	// Verify image_id is cleared from cache
+	iid, _ := m.cache.ImageID()
+	assert.Empty(t, iid, "image_id should be cleared after RemoveImage")
+}
+
+// TestRemoveImage_NoImage verifies that RemoveImage is a no-op when image_id is empty.
+func TestRemoveImage_NoImage(t *testing.T) {
+	mc := &mockClient{}
+	cfg := newDefaultConfig()
+	m, _ := newTestManager(t, mc, cfg)
+
+	require.NoError(t, m.cache.EnsureDir())
+	// No image_id set
+
+	err := m.RemoveImage(context.Background())
+	require.NoError(t, err)
+
+	assert.Empty(t, mc.imageRemovedIDs, "ImageRemove should NOT be called when no image_id")
 }
