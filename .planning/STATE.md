@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 05-harness-plugin-system-02-PLAN.md
-last_updated: "2026-03-29T19:26:42.735Z"
+stopped_at: Completed 05-harness-plugin-system-03-PLAN.md
+last_updated: "2026-03-29T19:30:27.388Z"
 last_activity: 2026-03-27 — Phase 02 Plan 03 complete; zone config (annotated TOML + JSON) + zone validate (grouped errors, exit 2) + CFG-07/CFG-08 tests
 progress:
   total_phases: 10
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 13
-  completed_plans: 12
+  completed_plans: 13
   percent: 100
 ---
 
@@ -61,6 +61,7 @@ Progress: [██████████] 100%
 | Phase 04-template-system P02 | 3min | 3 tasks | 6 files |
 | Phase 05-harness-plugin-system P01 | 2min | 1 tasks | 4 files |
 | Phase 05-harness-plugin-system P02 | 3 | 1 tasks | 7 files |
+| Phase 05-harness-plugin-system P03 | 1min | 1 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -96,6 +97,7 @@ Recent decisions affecting current work:
 - [Phase 05-harness-plugin-system]: NodeVersion/PythonVersion are NOT Harness interface methods — they come from MergedConfig.Harness per RESEARCH.md anti-patterns
 - [Phase 05-harness-plugin-system]: Get() wraps Validate() error with harness name prefix; placeholder stubs in harness.go for Plan 02 types keep plan compilable independently
 - [Phase 05-harness-plugin-system]: Cross-harness validation order: foreign-key errors before stub 'not implemented' error; aider owns python_version; custom checks skip_permissions before entrypoint_command
+- [Phase 05-harness-plugin-system]: NodeVersion/PythonVersion come from cfg.Harness (MergedConfig), not harness methods; HostUID/MacOSUsername set by Phase 6 caller (runtime values); configCopyCmd uses .host suffix for Phase 7 volume mount strategy
 
 ### Pending Todos
 
@@ -110,6 +112,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-29T19:26:42.732Z
-Stopped at: Completed 05-harness-plugin-system-02-PLAN.md
+Last session: 2026-03-29T19:30:27.385Z
+Stopped at: Completed 05-harness-plugin-system-03-PLAN.md
 Resume file: None

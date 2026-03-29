@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Config Foundation** - Two-tier TOML config, strict decode, merge strategy, validation (completed 2026-03-27)
 - [ ] **Phase 3: Cache & State** - .zone/ directory, config-hash tracking, file locking, build logs
 - [x] **Phase 4: Template System** - Dockerfile/entrypoint/RC templates, go:embed, deterministic naming (completed 2026-03-29)
-- [ ] **Phase 5: Harness Plugin System** - Interface, registry, claude-code impl, custom harness, stubs
+- [x] **Phase 5: Harness Plugin System** - Interface, registry, claude-code impl, custom harness, stubs (completed 2026-03-29)
 - [ ] **Phase 6: Docker Lifecycle Core** - Idempotent build/launch/stop/destroy, security hardening
 - [ ] **Phase 7: Environment, Auth & Forwarding** - Env vars, SSH agent, auth copy, proxy, ports, hooks
 - [ ] **Phase 8: CLI Commands & DX** - All commands wired, exit codes, signals, JSON output, aliases
@@ -175,7 +175,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 2. Config Foundation | 3/3 | Complete   | 2026-03-27 |
 | 3. Cache & State | 2/3 | In Progress|  |
 | 4. Template System | 2/2 | Complete   | 2026-03-29 |
-| 5. Harness Plugin System | 2/3 | In Progress|  |
+| 5. Harness Plugin System | 3/3 | Complete   | 2026-03-29 |
 | 6. Docker Lifecycle Core | 0/TBD | Not started | - |
 | 7. Environment, Auth & Forwarding | 0/TBD | Not started | - |
 | 8. CLI Commands & DX | 0/TBD | Not started | - |
