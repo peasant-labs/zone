@@ -28,6 +28,10 @@ type Manager struct {
 	cache   *cache.Cache
 	repoDir string // absolute path to repo root
 	version string // zone binary version for template rendering
+
+	// attachFn is the function used to attach an interactive TTY session.
+	// Defaults to attachInteractive; overridden in tests with a no-op.
+	attachFn func(containerID string, cmd []string, asRoot bool) error
 }
 
 // NewManager creates a Manager, verifying Docker daemon connectivity via Ping().
@@ -42,14 +46,18 @@ func NewManager(cfg *config.MergedConfig, c *cache.Cache, repoDir, version strin
 		return nil, fmt.Errorf("%w: %v", ErrDockerNotRunning, err)
 	}
 	absDir, _ := filepath.Abs(repoDir)
-	return &Manager{client: cli, config: cfg, cache: c, repoDir: absDir, version: version}, nil
+	m := &Manager{client: cli, config: cfg, cache: c, repoDir: absDir, version: version}
+	m.attachFn = m.attachInteractive
+	return m, nil
 }
 
 // newManagerWithClient creates a Manager with a pre-existing DockerClient.
 // Used in unit tests to inject a mock client without requiring a live Docker daemon.
 func newManagerWithClient(cli DockerClient, cfg *config.MergedConfig, c *cache.Cache, repoDir, version string) *Manager {
 	absDir, _ := filepath.Abs(repoDir)
-	return &Manager{client: cli, config: cfg, cache: c, repoDir: absDir, version: version}
+	m := &Manager{client: cli, config: cfg, cache: c, repoDir: absDir, version: version}
+	m.attachFn = m.attachInteractive
+	return m
 }
 
 // Build renders templates, creates a build context, and builds a Docker image.

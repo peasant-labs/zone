@@ -430,6 +430,7 @@ func makeLaunchMock(t *testing.T, status string, oomKilled bool) (*mockClient, *
 		networkCreateID:     "net-xyz",
 		containerInspectResp: container.InspectResponse{
 			ContainerJSONBase: &container.ContainerJSONBase{
+				ID: "container-abc",
 				State: &container.State{
 					Status:    status,
 					OOMKilled: oomKilled,
@@ -455,10 +456,10 @@ func TestLaunchStateMachine_Fresh(t *testing.T) {
 	err := m.Launch(context.Background(), LaunchOpts{})
 	require.NoError(t, err)
 
-	// ContainerStart should have been called
+	// ContainerStart should have been called (build+create+start path)
 	assert.True(t, mc.startCalled, "ContainerStart should be called for fresh launch")
-	// ContainerInspect should NOT have been called (no container_id in cache)
-	assert.Equal(t, container.InspectResponse{}, mc.containerInspectResp) // didn't change
+	// ContainerRemove should NOT have been called (no existing container to clean up)
+	assert.False(t, mc.removeCalled, "ContainerRemove should NOT be called for fresh launch")
 }
 
 // TestLaunchStateMachine_Running verifies that a running container triggers reattach, not rebuild.
