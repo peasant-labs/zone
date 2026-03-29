@@ -12,9 +12,11 @@ import (
 
 	dockerclient "github.com/docker/docker/client"
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/api/types/strslice"
+	"github.com/docker/docker/errdefs"
 
 	"github.com/peasant-labs/zone/internal/cache"
 	"github.com/peasant-labs/zone/internal/config"
@@ -190,4 +192,100 @@ func (m *Manager) attachInteractive(containerID string, cmd []string, asRoot boo
 	c.Stdout = os.Stdout
 	c.Stderr = os.Stderr
 	return c.Run()
+}
+
+// Stop stops and removes the container and its network, then clears container_id and
+// network_id from cache. The image and config.hash are retained so a subsequent
+// `zone launch` can reuse the existing image. Safe to call when no container exists.
+func (m *Manager) Stop(ctx context.Context) error {
+	containerID, err := m.cache.ContainerID()
+	if err != nil {
+		return fmt.Errorf("read container ID: %w", err)
+	}
+	if containerID == "" {
+		return nil // no-op: already stopped
+	}
+
+	// Stop the container with a 10-second graceful timeout.
+	timeout := 10
+	if err := m.client.ContainerStop(ctx, containerID, container.StopOptions{Timeout: &timeout}); err != nil {
+		if !errdefs.IsNotFound(err) {
+			return fmt.Errorf("stop container: %w", err)
+		}
+		// Container already gone — continue to cleanup
+	}
+
+	// Force-remove the container (idempotent: swallow NotFound).
+	if err := m.client.ContainerRemove(ctx, containerID, container.RemoveOptions{Force: true}); err != nil {
+		if !errdefs.IsNotFound(err) {
+			return fmt.Errorf("remove container: %w", err)
+		}
+	}
+
+	// Remove the dedicated bridge network.
+	if err := m.removeNetwork(ctx); err != nil {
+		return err
+	}
+
+	// Clear container and network IDs from cache; retain image_id and config.hash.
+	if err := m.cache.SetContainerID(""); err != nil {
+		return fmt.Errorf("clear container ID: %w", err)
+	}
+	if err := m.cache.SetNetworkID(""); err != nil {
+		return fmt.Errorf("clear network ID: %w", err)
+	}
+	return nil
+}
+
+// Destroy performs a full teardown: Stop, remove image, remove home volume, and
+// wipe all .zone/ cache files. After Destroy, the repo is in a pristine state
+// as if zone had never been run. Safe to call when no container exists.
+func (m *Manager) Destroy(ctx context.Context) error {
+	// Stop removes container + network and clears their cache IDs.
+	if err := m.Stop(ctx); err != nil {
+		return err
+	}
+
+	// Remove Docker image by cached ID (swallow NotFound — already pruned is fine).
+	imageID, err := m.cache.ImageID()
+	if err != nil {
+		return fmt.Errorf("read image ID: %w", err)
+	}
+	if imageID != "" {
+		if _, err := m.client.ImageRemove(ctx, imageID, image.RemoveOptions{Force: false, PruneChildren: true}); err != nil {
+			if !errdefs.IsNotFound(err) {
+				return fmt.Errorf("remove image: %w", err)
+			}
+		}
+	}
+
+	// Remove home volume (swallow NotFound — volume may never have been created).
+	if err := m.client.VolumeRemove(ctx, homeVolumeName(m.repoDir), false); err != nil {
+		if !errdefs.IsNotFound(err) {
+			return fmt.Errorf("remove home volume: %w", err)
+		}
+	}
+
+	// Wipe all .zone/ cache files.
+	return m.cache.Clean()
+}
+
+// RemoveImage removes the cached Docker image and clears image_id from cache.
+// Used by `zone clean --image`. Safe to call when no image is cached.
+func (m *Manager) RemoveImage(ctx context.Context) error {
+	imageID, err := m.cache.ImageID()
+	if err != nil {
+		return fmt.Errorf("read image ID: %w", err)
+	}
+	if imageID == "" {
+		return nil // no-op: no image cached
+	}
+
+	if _, err := m.client.ImageRemove(ctx, imageID, image.RemoveOptions{Force: false, PruneChildren: true}); err != nil {
+		if !errdefs.IsNotFound(err) {
+			return fmt.Errorf("remove image: %w", err)
+		}
+	}
+
+	return m.cache.SetImageID("")
 }
