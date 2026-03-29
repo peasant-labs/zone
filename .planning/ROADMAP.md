@@ -80,7 +80,10 @@ Plans:
   3. Container and network names are deterministic: same repo path always produces same name across machines
   4. Git safe.directory and user.name/email are set correctly inside the container
   5. Running as root UID (CI environment) skips user creation without error
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 04-01-PLAN.md — Embed migration (FS to string vars), template file content from spec, hash.go fix, naming + security flags
+- [ ] 04-02-PLAN.md — Render functions (Dockerfile/entrypoint/shellrc), platform detection, git identity, tests
 
 ### Phase 5: Harness Plugin System
 **Goal**: Claude Code launches correctly inside a Zone container; custom harnesses work via config; unimplemented harnesses fail with clear messages
@@ -167,7 +170,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 1. Project Scaffold | 2/2 | Complete   | 2026-03-27 |
 | 2. Config Foundation | 3/3 | Complete   | 2026-03-27 |
 | 3. Cache & State | 2/3 | In Progress|  |
-| 4. Template System | 0/TBD | Not started | - |
+| 4. Template System | 0/2 | Not started | - |
 | 5. Harness Plugin System | 0/TBD | Not started | - |
 | 6. Docker Lifecycle Core | 0/TBD | Not started | - |
 | 7. Environment, Auth & Forwarding | 0/TBD | Not started | - |
