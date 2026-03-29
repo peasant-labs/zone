@@ -116,7 +116,7 @@ Plans:
 Plans:
 - [x] 06-01-PLAN.md — Docker SDK install, client interface, Manager constructor, build pipeline, network, container creation
 - [x] 06-02-PLAN.md — Launch state machine, config change detection, headless mode, zero-config quickstart
-- [ ] 06-03-PLAN.md — Stop, Destroy, RemoveImage cleanup methods
+- [x] 06-03-PLAN.md — Stop, Destroy, RemoveImage cleanup methods
 - [ ] 06-04-PLAN.md — Wire all 8 Cobra commands (launch, join, exec, shell, build, stop, restart, destroy)
 
 ### Phase 7: Environment, Auth & Forwarding
@@ -181,7 +181,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 3. Cache & State | 2/3 | In Progress|  |
 | 4. Template System | 2/2 | Complete   | 2026-03-29 |
 | 5. Harness Plugin System | 3/3 | Complete   | 2026-03-29 |
-| 6. Docker Lifecycle Core | 2/4 | In Progress|  |
+| 6. Docker Lifecycle Core | 3/4 | In Progress|  |
 | 7. Environment, Auth & Forwarding | 0/TBD | Not started | - |
 | 8. CLI Commands & DX | 0/TBD | Not started | - |
 | 9. TUI Layer | 0/TBD | Not started | - |

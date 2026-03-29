@@ -16,13 +16,13 @@
 - [ ] **CLI-07**: User can run `zone exec -- <cmd>` to run a one-off command inside the running container
 - [ ] **CLI-08**: User can run `zone shell` to open an interactive shell even if no harness is running
 - [ ] **CLI-09**: User can run `zone build` to force-rebuild the Docker image without launching
-- [ ] **CLI-10**: User can run `zone stop` to stop and remove the container and network, retaining cache
+- [x] **CLI-10**: User can run `zone stop` to stop and remove the container and network, retaining cache
 - [ ] **CLI-11**: User can run `zone restart` to stop and relaunch the container
 - [ ] **CLI-12**: User can run `zone ls` to list all zone containers across all repos
 - [ ] **CLI-13**: User can run `zone logs` to view harness output, with `--follow` for live tailing
 - [ ] **CLI-14**: User can run `zone logs --build` to view the last Docker build log
-- [ ] **CLI-15**: User can run `zone clean` to remove .zone/ cache and optionally Docker image
-- [ ] **CLI-16**: User can run `zone destroy` to fully tear down container, image, network, and cache
+- [x] **CLI-15**: User can run `zone clean` to remove .zone/ cache and optionally Docker image
+- [x] **CLI-16**: User can run `zone destroy` to fully tear down container, image, network, and cache
 - [ ] **CLI-17**: User can run `zone status` to see container state, harness, uptime, ports, resources
 - [ ] **CLI-18**: User can run `zone config` to show effective merged config with source annotations
 - [ ] **CLI-19**: User can run `zone validate` to check zone.toml validity without launching
@@ -175,13 +175,13 @@
 | CLI-07 | Phase 6 | Pending |
 | CLI-08 | Phase 6 | Pending |
 | CLI-09 | Phase 6 | Pending |
-| CLI-10 | Phase 6 | Pending |
+| CLI-10 | Phase 6 | Complete |
 | CLI-11 | Phase 6 | Pending |
 | CLI-12 | Phase 8 | Pending |
 | CLI-13 | Phase 8 | Pending |
 | CLI-14 | Phase 8 | Pending |
-| CLI-15 | Phase 6 | Pending |
-| CLI-16 | Phase 6 | Pending |
+| CLI-15 | Phase 6 | Complete |
+| CLI-16 | Phase 6 | Complete |
 | CLI-17 | Phase 8 | Pending |
 | CLI-18 | Phase 8 | Pending |
 | CLI-19 | Phase 8 | Pending |
