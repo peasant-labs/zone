@@ -289,3 +289,65 @@ func (m *Manager) RemoveImage(ctx context.Context) error {
 
 	return m.cache.SetImageID("")
 }
+
+// Join attaches a new interactive shell to the running container.
+// Returns ErrNoContainer when no container is cached or the cached container
+// is not in the "running" state.
+func (m *Manager) Join(ctx context.Context) error {
+	containerID, err := m.cache.ContainerID()
+	if err != nil {
+		return fmt.Errorf("read container ID: %w", err)
+	}
+	if containerID == "" {
+		return ErrNoContainer
+	}
+
+	info, err := m.client.ContainerInspect(ctx, containerID)
+	if err != nil {
+		if errdefs.IsNotFound(err) {
+			return ErrNoContainer
+		}
+		return fmt.Errorf("inspect container: %w", err)
+	}
+	if info.State.Status != "running" {
+		return fmt.Errorf("container is %s, not running. Run `zone launch` first", info.State.Status)
+	}
+
+	shell := m.config.Zone.Shell
+	if shell == "" {
+		shell = "bash"
+	}
+	return m.attachFn(containerID, []string{shell}, false)
+}
+
+// Exec runs a one-off command inside the running container.
+// Returns ErrNoContainer when no container is cached.
+// asRoot runs the command as root inside the container.
+func (m *Manager) Exec(ctx context.Context, command []string, asRoot bool) error {
+	containerID, err := m.cache.ContainerID()
+	if err != nil {
+		return fmt.Errorf("read container ID: %w", err)
+	}
+	if containerID == "" {
+		return ErrNoContainer
+	}
+	return m.attachFn(containerID, command, asRoot)
+}
+
+// Shell opens an interactive shell inside the running container without running
+// the harness entrypoint. Returns ErrNoContainer when no container is cached.
+func (m *Manager) Shell(ctx context.Context) error {
+	containerID, err := m.cache.ContainerID()
+	if err != nil {
+		return fmt.Errorf("read container ID: %w", err)
+	}
+	if containerID == "" {
+		return ErrNoContainer
+	}
+
+	shell := m.config.Zone.Shell
+	if shell == "" {
+		shell = "bash"
+	}
+	return m.attachFn(containerID, []string{shell}, false)
+}
