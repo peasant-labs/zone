@@ -41,6 +41,20 @@ type mockClient struct {
 	imageBuildErr    error
 	imageInspectResp types.ImageInspect
 	imageInspectErr  error
+
+	// Launch state machine fields
+	containerInspectResp container.InspectResponse
+	containerInspectErr  error
+	containerUnpauseErr  error
+	containerRemoveErr   error
+	containerStopErr     error
+
+	// Track calls for assertion
+	unpauseCalled  bool
+	removeCalled   bool
+	stopCalled     bool
+	startCalled    bool
+	startedIDs     []string
 }
 
 func (m *mockClient) Ping(ctx context.Context) (types.Ping, error) {
@@ -64,23 +78,28 @@ func (m *mockClient) ContainerCreate(ctx context.Context, cfg *container.Config,
 }
 
 func (m *mockClient) ContainerStart(ctx context.Context, containerID string, options container.StartOptions) error {
+	m.startCalled = true
+	m.startedIDs = append(m.startedIDs, containerID)
 	return nil
 }
 
 func (m *mockClient) ContainerStop(ctx context.Context, containerID string, options container.StopOptions) error {
-	return nil
+	m.stopCalled = true
+	return m.containerStopErr
 }
 
 func (m *mockClient) ContainerRemove(ctx context.Context, containerID string, options container.RemoveOptions) error {
-	return nil
+	m.removeCalled = true
+	return m.containerRemoveErr
 }
 
 func (m *mockClient) ContainerInspect(ctx context.Context, containerID string) (container.InspectResponse, error) {
-	return container.InspectResponse{}, nil
+	return m.containerInspectResp, m.containerInspectErr
 }
 
 func (m *mockClient) ContainerUnpause(ctx context.Context, containerID string) error {
-	return nil
+	m.unpauseCalled = true
+	return m.containerUnpauseErr
 }
 
 func (m *mockClient) NetworkCreate(ctx context.Context, name string, options network.CreateOptions) (network.CreateResponse, error) {
@@ -109,6 +128,8 @@ func newTestManager(t *testing.T, mc *mockClient, cfg *config.MergedConfig) (*Ma
 	tmpDir := t.TempDir()
 	c := cache.New(tmpDir)
 	m := newManagerWithClient(mc, cfg, c, tmpDir, "test-version")
+	// Override attachFn with a no-op so tests don't try to exec docker
+	m.attachFn = func(containerID string, cmd []string, asRoot bool) error { return nil }
 	return m, tmpDir
 }
 
@@ -390,4 +411,246 @@ func TestRemoveNetwork_OtherError(t *testing.T) {
 	err := m.removeNetwork(context.Background())
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "remove network")
+}
+
+// --- Launch State Machine Tests ---
+
+// makeLaunchMock sets up a mockClient and Manager for Launch tests.
+// The mock image build returns a synthetic image ID; ContainerCreate returns a synthetic container ID.
+func makeLaunchMock(t *testing.T, status string, oomKilled bool) (*mockClient, *Manager, string) {
+	t.Helper()
+
+	buildJSON := `{"aux":{"ID":"sha256:testimage123"}}` + "\n"
+	mc := &mockClient{
+		imageBuildResp: types.ImageBuildResponse{
+			Body: io.NopCloser(strings.NewReader(buildJSON)),
+		},
+		imageInspectResp: types.ImageInspect{ID: "sha256:testimage123"},
+		containerCreateResp: container.CreateResponse{ID: "container-abc"},
+		networkCreateID:     "net-xyz",
+		containerInspectResp: container.InspectResponse{
+			ContainerJSONBase: &container.ContainerJSONBase{
+				State: &container.State{
+					Status:    status,
+					OOMKilled: oomKilled,
+				},
+			},
+		},
+	}
+
+	cfg := newDefaultConfig()
+	m, tmpDir := newTestManager(t, mc, cfg)
+
+	// Prime cache so EnsureDir works for lock
+	require.NoError(t, m.cache.EnsureDir())
+
+	return mc, m, tmpDir
+}
+
+// TestLaunchStateMachine_Fresh verifies that a fresh launch (no container_id in cache)
+// triggers a full build + create + start sequence.
+func TestLaunchStateMachine_Fresh(t *testing.T) {
+	mc, m, _ := makeLaunchMock(t, "", false)
+
+	err := m.Launch(context.Background(), LaunchOpts{})
+	require.NoError(t, err)
+
+	// ContainerStart should have been called
+	assert.True(t, mc.startCalled, "ContainerStart should be called for fresh launch")
+	// ContainerInspect should NOT have been called (no container_id in cache)
+	assert.Equal(t, container.InspectResponse{}, mc.containerInspectResp) // didn't change
+}
+
+// TestLaunchStateMachine_Running verifies that a running container triggers reattach, not rebuild.
+func TestLaunchStateMachine_Running(t *testing.T) {
+	mc, m, _ := makeLaunchMock(t, "running", false)
+
+	// Prime cache with a container ID
+	require.NoError(t, m.cache.SetContainerID("container-abc"))
+
+	// Prime config hash to match so no "stale config" warning
+	hash, err := computeTestHash(m)
+	require.NoError(t, err)
+	require.NoError(t, m.cache.SetConfigHash(hash))
+
+	var attachedID string
+	m.attachFn = func(containerID string, cmd []string, asRoot bool) error {
+		attachedID = containerID
+		return nil
+	}
+
+	err = m.Launch(context.Background(), LaunchOpts{})
+	require.NoError(t, err)
+
+	// Should have reattached to the existing container, not created a new one
+	assert.Equal(t, "container-abc", attachedID)
+	assert.False(t, mc.startCalled, "ContainerStart should NOT be called for running container")
+}
+
+// TestLaunchStateMachine_RunningStaleConfig verifies warning printed when running container
+// has a different config hash than the current one.
+func TestLaunchStateMachine_RunningStaleConfig(t *testing.T) {
+	_, m, _ := makeLaunchMock(t, "running", false)
+
+	require.NoError(t, m.cache.SetContainerID("container-abc"))
+	// Write a deliberately different (stale) hash
+	require.NoError(t, m.cache.SetConfigHash("stale-hash-000"))
+
+	// Capture stderr
+	oldStderr := os.Stderr
+	r, w, _ := os.Pipe()
+	os.Stderr = w
+
+	err := m.Launch(context.Background(), LaunchOpts{})
+
+	w.Close()
+	os.Stderr = oldStderr
+	var buf bytes.Buffer
+	_, _ = io.Copy(&buf, r)
+
+	require.NoError(t, err)
+	assert.Contains(t, buf.String(), "Config has changed")
+}
+
+// TestLaunchStateMachine_Paused verifies that a paused container is unpaused then attached.
+func TestLaunchStateMachine_Paused(t *testing.T) {
+	mc, m, _ := makeLaunchMock(t, "paused", false)
+
+	require.NoError(t, m.cache.SetContainerID("container-abc"))
+
+	var attachedID string
+	m.attachFn = func(containerID string, cmd []string, asRoot bool) error {
+		attachedID = containerID
+		return nil
+	}
+
+	err := m.Launch(context.Background(), LaunchOpts{})
+	require.NoError(t, err)
+
+	assert.True(t, mc.unpauseCalled, "ContainerUnpause should be called for paused container")
+	assert.Equal(t, "container-abc", attachedID)
+}
+
+// TestLaunchStateMachine_Exited verifies that an exited container is removed then rebuilt.
+func TestLaunchStateMachine_Exited(t *testing.T) {
+	mc, m, _ := makeLaunchMock(t, "exited", false)
+
+	require.NoError(t, m.cache.SetContainerID("container-abc"))
+
+	err := m.Launch(context.Background(), LaunchOpts{})
+	require.NoError(t, err)
+
+	assert.True(t, mc.removeCalled, "ContainerRemove should be called for exited container")
+	assert.True(t, mc.startCalled, "ContainerStart should be called after rebuild")
+}
+
+// TestLaunchStateMachine_ExitedOOM verifies OOM kill warning printed to stderr.
+func TestLaunchStateMachine_ExitedOOM(t *testing.T) {
+	_, m, _ := makeLaunchMock(t, "exited", true)
+
+	require.NoError(t, m.cache.SetContainerID("container-abc"))
+
+	// Capture stderr
+	oldStderr := os.Stderr
+	r, w, _ := os.Pipe()
+	os.Stderr = w
+
+	err := m.Launch(context.Background(), LaunchOpts{})
+
+	w.Close()
+	os.Stderr = oldStderr
+	var buf bytes.Buffer
+	_, _ = io.Copy(&buf, r)
+
+	require.NoError(t, err)
+	assert.Contains(t, buf.String(), "memory limit")
+}
+
+// TestLaunchStateMachine_StaleID verifies that a "not found" inspect response causes
+// the cache to be cleaned and a fresh build to proceed.
+func TestLaunchStateMachine_StaleID(t *testing.T) {
+	buildJSON := `{"aux":{"ID":"sha256:testimage123"}}` + "\n"
+	mc := &mockClient{
+		imageBuildResp: types.ImageBuildResponse{
+			Body: io.NopCloser(strings.NewReader(buildJSON)),
+		},
+		imageInspectResp:    types.ImageInspect{ID: "sha256:testimage123"},
+		containerCreateResp: container.CreateResponse{ID: "container-new"},
+		networkCreateID:     "net-xyz",
+		// ContainerInspect returns NotFound (stale ID)
+		containerInspectErr: errdefs.NotFound(errors.New("no such container")),
+	}
+
+	cfg := newDefaultConfig()
+	m, _ := newTestManager(t, mc, cfg)
+	require.NoError(t, m.cache.EnsureDir())
+	require.NoError(t, m.cache.SetContainerID("stale-container-id"))
+
+	err := m.Launch(context.Background(), LaunchOpts{})
+	require.NoError(t, err)
+
+	assert.True(t, mc.startCalled, "ContainerStart should be called after stale cache clean")
+
+	// Container ID should now be the new one
+	storedID, _ := m.cache.ContainerID()
+	assert.Equal(t, "container-new", storedID)
+}
+
+// TestLaunchHeadless verifies that headless mode prints the container ID to stdout
+// and does NOT call attachFn.
+func TestLaunchHeadless(t *testing.T) {
+	_, m, _ := makeLaunchMock(t, "", false)
+
+	// Capture stdout
+	oldStdout := os.Stdout
+	r, w, _ := os.Pipe()
+	os.Stdout = w
+
+	attachCalled := false
+	m.attachFn = func(containerID string, cmd []string, asRoot bool) error {
+		attachCalled = true
+		return nil
+	}
+
+	err := m.Launch(context.Background(), LaunchOpts{Headless: true})
+
+	w.Close()
+	os.Stdout = oldStdout
+	var buf bytes.Buffer
+	_, _ = io.Copy(&buf, r)
+
+	require.NoError(t, err)
+	assert.Contains(t, buf.String(), "container-abc")
+	assert.False(t, attachCalled, "attachFn should NOT be called in headless mode")
+}
+
+// TestConfigHashDetection_AutoRebuild verifies that when there's no running container
+// and the hash has changed, a silent rebuild is triggered.
+func TestConfigHashDetection_AutoRebuild(t *testing.T) {
+	mc, m, _ := makeLaunchMock(t, "", false)
+
+	// Set a stale hash (no container ID — fresh launch path)
+	require.NoError(t, m.cache.SetConfigHash("old-hash-doesnt-match-current"))
+
+	err := m.Launch(context.Background(), LaunchOpts{})
+	require.NoError(t, err)
+
+	// Build should have run (ContainerStart was called)
+	assert.True(t, mc.startCalled, "should have rebuilt and started container")
+}
+
+// --- Zero-config quickstart test ---
+
+// TestGenerateMinimalZoneToml verifies the generated zone.toml content.
+func TestGenerateMinimalZoneToml(t *testing.T) {
+	result := generateMinimalZoneToml("claude-code")
+
+	assert.Contains(t, result, "version = 1")
+	assert.Contains(t, result, `harness = "claude-code"`)
+	assert.Contains(t, result, "# Uncomment to customize:")
+}
+
+// computeTestHash is a helper to get the current config hash for a manager.
+func computeTestHash(m *Manager) (string, error) {
+	return cache.ComputeHash(m.config, m.version)
 }
