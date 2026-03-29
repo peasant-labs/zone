@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 04-template-system-01-PLAN.md
-last_updated: "2026-03-29T18:36:35.154Z"
+stopped_at: Completed 04-template-system-02-PLAN.md
+last_updated: "2026-03-29T18:46:46.332Z"
 last_activity: 2026-03-27 — Phase 02 Plan 03 complete; zone config (annotated TOML + JSON) + zone validate (grouped errors, exit 2) + CFG-07/CFG-08 tests
 progress:
   total_phases: 10
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 10
-  completed_plans: 9
+  completed_plans: 10
   percent: 100
 ---
 
@@ -58,6 +58,7 @@ Progress: [██████████] 100%
 | Phase 03-cache-state P02 | 2min | 3 tasks | 4 files |
 | Phase 03-cache-state P03 | 3 | 1 tasks | 2 files |
 | Phase 04-template-system P01 | 10min | 2 tasks | 8 files |
+| Phase 04-template-system P02 | 3min | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -88,6 +89,8 @@ Recent decisions affecting current work:
 - [Phase 04-template-system]: embed.FS replaced with three individual string vars — allows direct string access without io/fs overhead
 - [Phase 04-template-system]: ContainerName uses filepath.Abs so relative and absolute paths always produce same deterministic name
 - [Phase 04-template-system]: hash.go migrated simultaneously with templates to keep build passing with no intermediate broken state
+- [Phase 04-template-system]: templateFuncs() and injectGenerationComment() defined once in dockerfile.go, shared by entrypoint.go and shellrc.go
+- [Phase 04-template-system]: DetectGitIdentity() both-or-nothing: partial git config returns forward=false, empty strings for name/email
 
 ### Pending Todos
 
@@ -102,6 +105,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-29T18:36:35.145Z
-Stopped at: Completed 04-template-system-01-PLAN.md
+Last session: 2026-03-29T18:46:46.329Z
+Stopped at: Completed 04-template-system-02-PLAN.md
 Resume file: None
