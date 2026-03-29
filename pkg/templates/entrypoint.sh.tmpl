@@ -1,1 +1,26 @@
-# Zone entrypoint template — populated in Phase 4
+#!/bin/bash
+set -e
+
+# Mark workspace as git-safe
+git config --global --add safe.directory {{ .MountPath }}
+
+{{- if .ForwardGitConfig }}
+
+# Forward host git identity
+git config --global user.name "{{ .GitUserName }}"
+git config --global user.email "{{ .GitUserEmail }}"
+{{- end }}
+
+# Copy host auth config into writable location
+{{- range .ConfigCopyCommands }}
+{{ . }}
+{{- end }}
+
+# Source shell customizations
+echo 'source ~/.zone-bashrc' >> ~/.bashrc
+{{- if eq .Shell "zsh" }}
+echo 'source ~/.zone-bashrc' >> ~/.zshrc
+{{- end }}
+
+# Execute harness command, forwarding any extra args
+exec {{ .EntrypointCommand }} "$@"

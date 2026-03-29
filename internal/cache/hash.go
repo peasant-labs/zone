@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
-	"io/fs"
 
 	"github.com/peasant-labs/zone/internal/config"
 	"github.com/peasant-labs/zone/pkg/templates"
@@ -20,20 +19,10 @@ func ComputeHash(cfg *config.MergedConfig, version string) (string, error) {
 		return "", fmt.Errorf("marshal config: %w", err)
 	}
 
-	dockerfileTmpl, err := fs.ReadFile(templates.FS, "Dockerfile.tmpl")
-	if err != nil {
-		return "", fmt.Errorf("read Dockerfile template: %w", err)
-	}
-
-	entrypointTmpl, err := fs.ReadFile(templates.FS, "entrypoint.sh.tmpl")
-	if err != nil {
-		return "", fmt.Errorf("read entrypoint template: %w", err)
-	}
-
 	h := sha256.New()
 	h.Write(cfgJSON)
-	h.Write(dockerfileTmpl)
-	h.Write(entrypointTmpl)
+	h.Write([]byte(templates.DockerfileTmpl))
+	h.Write([]byte(templates.EntrypointTmpl))
 	h.Write([]byte(version))
 
 	return fmt.Sprintf("%x", h.Sum(nil)), nil

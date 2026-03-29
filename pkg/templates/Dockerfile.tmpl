@@ -1,1 +1,102 @@
-# Zone Dockerfile template — populated in Phase 4
+# syntax=docker/dockerfile:1
+FROM {{ .BaseImage }}
+
+ARG HOST_UID={{ .HostUID }}
+ARG DEBIAN_FRONTEND=noninteractive
+
+# Base system packages (rarely change -- cached layer)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
+    git \
+    sudo \
+    && rm -rf /var/lib/apt/lists/*
+
+{{- if .AptPackages }}
+
+# User-specified apt packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+{{- range .AptPackages }}
+    {{ . }} \
+{{- end }}
+    && rm -rf /var/lib/apt/lists/*
+{{- end }}
+
+{{- if .NeedsNode }}
+
+# Node.js {{ .NodeVersion }}
+RUN curl -fsSL https://deb.nodesource.com/setup_{{ .NodeVersion }}.x | bash - \
+    && apt-get install -y nodejs \
+    && rm -rf /var/lib/apt/lists/*
+{{- end }}
+
+{{- if .NeedsPython }}
+
+# Python {{ .PythonVersion }}
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python{{ .PythonVersion }} python3-pip \
+    && rm -rf /var/lib/apt/lists/*
+{{- end }}
+
+{{- if .NpmPackages }}
+
+# Global npm packages
+RUN npm install -g {{ join .NpmPackages " " }}
+{{- end }}
+
+{{- if .PipPackages }}
+
+# Pip packages
+RUN pip install --break-system-packages {{ join .PipPackages " " }}
+{{- end }}
+
+{{- if .HarnessInstallCommands }}
+
+# Harness installation
+RUN {{ join .HarnessInstallCommands " && " }}
+{{- end }}
+
+{{- if .HealthCheck }}
+
+# Verify harness installed correctly
+RUN {{ .HealthCheck }}
+{{- end }}
+
+{{- if .InstallZsh }}
+
+# Zsh
+RUN apt-get update && apt-get install -y --no-install-recommends zsh \
+    && rm -rf /var/lib/apt/lists/*
+{{- end }}
+
+# Create non-root user with scoped sudo
+{{- if eq .HostUID 0 }}
+# Running as root (CI environment) -- skip user creation
+{{- else }}
+RUN useradd -m -s /bin/{{ .Shell }} -u ${HOST_UID} zone \
+    && echo "zone ALL=(ALL) NOPASSWD: /usr/bin/apt-get, /usr/bin/apt, /usr/bin/pip*, /usr/bin/npm, /usr/local/bin/npm" >> /etc/sudoers
+{{- end }}
+
+{{- if .MacOSUsername }}
+
+# macOS plugin symlink compatibility
+RUN mkdir -p /Users/{{ .MacOSUsername }} \
+    && ln -sf /home/zone /Users/{{ .MacOSUsername }}
+{{- end }}
+
+{{- if ne .HostUID 0 }}
+USER zone
+{{- end }}
+
+{{- if .PostInstallCommands }}
+
+# Post-install (as zone user)
+RUN {{ join .PostInstallCommands " && " }}
+{{- end }}
+
+WORKDIR {{ .MountPath }}
+
+COPY entrypoint.sh /entrypoint.sh
+COPY zone-bashrc /home/zone/.zone-bashrc
+
+ENTRYPOINT ["/entrypoint.sh"]
