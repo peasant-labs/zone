@@ -1,6 +1,17 @@
 // errors.go defines sentinel errors for the docker package.
 package docker
 
+import "errors"
+
+// Sentinel errors returned by Manager operations.
+var (
+	// ErrDockerNotRunning is returned when the Docker daemon is not reachable.
+	ErrDockerNotRunning = errors.New("docker daemon is not running. Start Docker Desktop or the Docker daemon and try again")
+
+	// ErrNoContainer is returned when an operation requires a running container but none exists.
+	ErrNoContainer = errors.New("no container is running for this repo. Run `zone launch` first")
+)
+
 // SecurityConfig holds hardened container security settings per spec section 12.
 type SecurityConfig struct {
 	SecurityOpt      []string
