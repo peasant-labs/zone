@@ -58,9 +58,9 @@
 - [x] **HAR-02**: BaseHarness provides default implementations for optional methods
 - [x] **HAR-03**: Factory registry maps harness names to constructors
 - [x] **HAR-04**: `claude-code` harness is fully implemented with install, health check, env vars, config dir
-- [ ] **HAR-05**: `opencode`, `gemini-cli`, `aider`, `codex-cli` harnesses return descriptive "not yet implemented" errors
-- [ ] **HAR-06**: `custom` harness supports install_commands, entrypoint_command, config_dirs, required_env, health_check, aliases, shell_rc
-- [ ] **HAR-07**: Each harness validates only its supported config keys; cross-harness keys produce specific errors
+- [x] **HAR-05**: `opencode`, `gemini-cli`, `aider`, `codex-cli` harnesses return descriptive "not yet implemented" errors
+- [x] **HAR-06**: `custom` harness supports install_commands, entrypoint_command, config_dirs, required_env, health_check, aliases, shell_rc
+- [x] **HAR-07**: Each harness validates only its supported config keys; cross-harness keys produce specific errors
 - [x] **HAR-08**: HarnessConfig is a typed struct (not map[string]interface{})
 - [x] **HAR-09**: `skip_permissions` for claude-code defaults to false with security warning in init wizard
 - [x] **HAR-10**: `--prompt`/`-p` flag translates to harness-appropriate prompt flag automatically
@@ -211,9 +211,9 @@
 | HAR-02 | Phase 5 | Complete |
 | HAR-03 | Phase 5 | Complete |
 | HAR-04 | Phase 5 | Complete |
-| HAR-05 | Phase 5 | Pending |
-| HAR-06 | Phase 5 | Pending |
-| HAR-07 | Phase 5 | Pending |
+| HAR-05 | Phase 5 | Complete |
+| HAR-06 | Phase 5 | Complete |
+| HAR-07 | Phase 5 | Complete |
 | HAR-08 | Phase 5 | Complete |
 | HAR-09 | Phase 5 | Complete |
 | HAR-10 | Phase 5 | Complete |
