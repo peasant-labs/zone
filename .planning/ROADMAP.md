@@ -112,7 +112,12 @@ Plans:
   4. `zone stop` removes the container and network; `zone destroy` additionally removes the image and cache
   5. `zone launch --harness claude-code` works in a directory with no zone.toml (zero-config quickstart)
   6. `zone launch --headless -p "task"` runs the agent detached and returns to the shell immediately
-**Plans**: TBD
+**Plans**: 4 plans
+Plans:
+- [ ] 06-01-PLAN.md — Docker SDK install, client interface, Manager constructor, build pipeline, network, container creation
+- [ ] 06-02-PLAN.md — Launch state machine, config change detection, headless mode, zero-config quickstart
+- [ ] 06-03-PLAN.md — Stop, Destroy, RemoveImage cleanup methods
+- [ ] 06-04-PLAN.md — Wire all 8 Cobra commands (launch, join, exec, shell, build, stop, restart, destroy)
 
 ### Phase 7: Environment, Auth & Forwarding
 **Goal**: Secrets, credentials, and runtime configuration reach the container correctly without being persisted in the image
@@ -167,7 +172,7 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -176,7 +181,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 3. Cache & State | 2/3 | In Progress|  |
 | 4. Template System | 2/2 | Complete   | 2026-03-29 |
 | 5. Harness Plugin System | 3/3 | Complete   | 2026-03-29 |
-| 6. Docker Lifecycle Core | 0/TBD | Not started | - |
+| 6. Docker Lifecycle Core | 0/4 | Not started | - |
 | 7. Environment, Auth & Forwarding | 0/TBD | Not started | - |
 | 8. CLI Commands & DX | 0/TBD | Not started | - |
 | 9. TUI Layer | 0/TBD | Not started | - |
