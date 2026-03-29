@@ -67,13 +67,13 @@
 
 ### Docker Management
 
-- [ ] **DOC-01**: Dockerfile generated from Go text/template with go:embed
+- [x] **DOC-01**: Dockerfile generated from Go text/template with go:embed
 - [ ] **DOC-02**: Entrypoint script generated from template with `exec` for proper PID 1 signal handling
 - [ ] **DOC-03**: Shell RC file generated from template with aliases, prompt, welcome message
 - [ ] **DOC-04**: Non-root `zone` user created with UID matching host user
 - [ ] **DOC-05**: Sudo scoped to package managers only (apt-get, pip, npm)
-- [ ] **DOC-06**: Container created with `no-new-privileges`, capability dropping, pids limit
-- [ ] **DOC-07**: Deterministic container naming from repo absolute path (hash-based)
+- [x] **DOC-06**: Container created with `no-new-privileges`, capability dropping, pids limit
+- [x] **DOC-07**: Deterministic container naming from repo absolute path (hash-based)
 - [ ] **DOC-08**: Docker labels applied for discovery by `zone ls`
 - [ ] **DOC-09**: Idempotent launch: reattach if running, handle paused/exited/dead/stale states
 - [ ] **DOC-10**: Config change detection warns user to restart when config hash differs
@@ -217,13 +217,13 @@
 | HAR-08 | Phase 5 | Pending |
 | HAR-09 | Phase 5 | Pending |
 | HAR-10 | Phase 5 | Pending |
-| DOC-01 | Phase 4 | Pending |
+| DOC-01 | Phase 4 | Complete |
 | DOC-02 | Phase 4 | Pending |
 | DOC-03 | Phase 4 | Pending |
 | DOC-04 | Phase 4 | Pending |
 | DOC-05 | Phase 4 | Pending |
-| DOC-06 | Phase 4 | Pending |
-| DOC-07 | Phase 4 | Pending |
+| DOC-06 | Phase 4 | Complete |
+| DOC-07 | Phase 4 | Complete |
 | DOC-08 | Phase 6 | Pending |
 | DOC-09 | Phase 6 | Pending |
 | DOC-10 | Phase 6 | Pending |
