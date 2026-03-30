@@ -9,6 +9,8 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
+	"strings"
 
 	dockerclient "github.com/docker/docker/client"
 	"github.com/docker/docker/api/types/container"
@@ -20,6 +22,7 @@ import (
 
 	"github.com/peasant-labs/zone/internal/cache"
 	"github.com/peasant-labs/zone/internal/config"
+	"github.com/peasant-labs/zone/internal/harness"
 )
 
 // Manager orchestrates Docker container lifecycle operations for a single repository.
@@ -105,9 +108,52 @@ func (m *Manager) createContainer(ctx context.Context, imageID string) (string, 
 
 	mounts := m.buildMounts()
 
+	// Collect forwarded env vars (CFG-10)
+	envVars, envWarnings := CollectForwardedEnv(m.config.Auth.ForwardEnv)
+	for _, w := range envWarnings {
+		fmt.Fprintln(os.Stderr, w)
+	}
+
+	// Load .env file vars (CFG-14)
+	if m.config.Auth.EnvFile != "" {
+		envFilePath := m.config.Auth.EnvFile
+		if !filepath.IsAbs(envFilePath) {
+			envFilePath = filepath.Join(m.repoDir, envFilePath)
+		}
+		envFileVars, err := ParseEnvFile(envFilePath)
+		if err != nil {
+			return "", fmt.Errorf("load env file: %w", err)
+		}
+		for k, v := range envFileVars {
+			envVars = append(envVars, k+"="+v)
+		}
+	}
+
+	// Add proxy env vars (CFG-15)
+	httpProxy, httpsProxy, noProxy := resolveProxy(&m.config.Network)
+	envVars = append(envVars, proxyEnvVars(httpProxy, httpsProxy, noProxy)...)
+
+	// Add SSH_AUTH_SOCK env var if socket was mounted (CFG-12)
+	if m.config.Auth.ForwardSSHAgent != nil && *m.config.Auth.ForwardSSHAgent && runtime.GOOS != "darwin" {
+		sock := os.Getenv("SSH_AUTH_SOCK")
+		if sock != "" {
+			if fi, err := os.Stat(sock); err == nil && fi.Mode()&os.ModeSocket != 0 {
+				envVars = append(envVars, "SSH_AUTH_SOCK=/tmp/ssh-agent.sock")
+			}
+		}
+	}
+
+	// Parse port bindings (CFG-16)
+	portBindings, exposedPorts, err := parsePortBindings(m.config.Workspace.Ports)
+	if err != nil {
+		return "", fmt.Errorf("parse ports: %w", err)
+	}
+
 	cfg := &container.Config{
-		Image:  imageID,
-		Labels: ContainerLabels(m.repoDir, m.config.Zone.Harness),
+		Image:        imageID,
+		Labels:       ContainerLabels(m.repoDir, m.config.Zone.Harness),
+		Env:          envVars,
+		ExposedPorts: exposedPorts,
 	}
 
 	hostCfg := &container.HostConfig{
@@ -122,7 +168,8 @@ func (m *Manager) createContainer(ctx context.Context, imageID string) (string, 
 		Sysctls: map[string]string{
 			"net.ipv6.conf.all.disable_ipv6": "1",
 		},
-		Mounts: mounts,
+		Mounts:       mounts,
+		PortBindings: portBindings,
 	}
 
 	netCfg := &network.NetworkingConfig{
@@ -165,7 +212,77 @@ func (m *Manager) buildMounts() []mount.Mount {
 		})
 	}
 
+	// SSH agent forwarding (CFG-12)
+	if m.config.Auth.ForwardSSHAgent != nil && *m.config.Auth.ForwardSSHAgent {
+		if runtime.GOOS == "darwin" {
+			fmt.Fprintf(os.Stderr, "Warning: SSH agent forwarding is not available on macOS (domain sockets cannot be bind-mounted). SSH operations inside the container will not have agent access.\n")
+		} else {
+			sock := os.Getenv("SSH_AUTH_SOCK")
+			if sock == "" {
+				fmt.Fprintf(os.Stderr, "Warning: SSH_AUTH_SOCK is not set or socket not found. SSH agent forwarding skipped.\n")
+			} else if fi, err := os.Stat(sock); err == nil && fi.Mode()&os.ModeSocket != 0 {
+				mounts = append(mounts, mount.Mount{
+					Type:     mount.TypeBind,
+					Source:   sock,
+					Target:   "/tmp/ssh-agent.sock",
+					ReadOnly: true,
+				})
+			} else {
+				fmt.Fprintf(os.Stderr, "Warning: SSH_AUTH_SOCK is not set or socket not found. SSH agent forwarding skipped.\n")
+			}
+		}
+	}
+
+	// Auth config mounts (CFG-13) — copy-on-start strategy
+	mountHomeConfig := m.config.Auth.MountHomeConfig == nil || *m.config.Auth.MountHomeConfig
+	if mountHomeConfig {
+		h, err := harness.Get(m.config.Zone.Harness, &m.config.Harness)
+		if err == nil {
+			configDirs := collectConfigDirs(h)
+			for _, dir := range configDirs {
+				expanded := expandHome(dir)
+				if _, err := os.Stat(expanded); os.IsNotExist(err) {
+					continue // skip missing dir
+				}
+				mounts = append(mounts, mount.Mount{
+					Type:     mount.TypeBind,
+					Source:   expanded,
+					Target:   dir + ".host",
+					ReadOnly: true,
+				})
+			}
+		}
+	}
+
 	return mounts
+}
+
+// collectConfigDirs returns the HomeConfigDir plus ExtraConfigDirs for a harness,
+// filtering out empty strings.
+func collectConfigDirs(h harness.Harness) []string {
+	var dirs []string
+	if home := h.HomeConfigDir(); home != "" {
+		dirs = append(dirs, home)
+	}
+	for _, d := range h.ExtraConfigDirs() {
+		if d != "" {
+			dirs = append(dirs, d)
+		}
+	}
+	return dirs
+}
+
+// expandHome replaces a leading "~/" with the user's home directory.
+// If os.UserHomeDir() returns an error, the path is returned unchanged.
+func expandHome(path string) string {
+	if strings.HasPrefix(path, "~/") {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return path
+		}
+		return home + path[1:]
+	}
+	return path
 }
 
 // homeVolumeName returns the deterministic Docker volume name for a repo's home dir.

@@ -8,17 +8,21 @@ import (
 	"context"
 	"errors"
 	"io"
+	"net"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/image"
+	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/api/types/volume"
 	"github.com/docker/docker/errdefs"
+	"github.com/docker/go-connections/nat"
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -59,6 +63,11 @@ type mockClient struct {
 	startedIDs       []string
 	imageRemovedIDs  []string
 	volumeRemovedIDs []string
+
+	// Capture container creation arguments for assertions
+	lastContainerConfig *container.Config
+	lastHostConfig      *container.HostConfig
+	lastBuildOptions    types.ImageBuildOptions
 }
 
 func (m *mockClient) Ping(ctx context.Context) (types.Ping, error) {
@@ -66,6 +75,7 @@ func (m *mockClient) Ping(ctx context.Context) (types.Ping, error) {
 }
 
 func (m *mockClient) ImageBuild(ctx context.Context, buildContext io.Reader, options types.ImageBuildOptions) (types.ImageBuildResponse, error) {
+	m.lastBuildOptions = options
 	return m.imageBuildResp, m.imageBuildErr
 }
 
@@ -79,6 +89,8 @@ func (m *mockClient) ImageRemove(ctx context.Context, imageID string, options im
 }
 
 func (m *mockClient) ContainerCreate(ctx context.Context, cfg *container.Config, hostConfig *container.HostConfig, networkingConfig *network.NetworkingConfig, platform *ocispec.Platform, containerName string) (container.CreateResponse, error) {
+	m.lastContainerConfig = cfg
+	m.lastHostConfig = hostConfig
 	return m.containerCreateResp, m.containerCreateErr
 }
 
@@ -330,6 +342,9 @@ func TestBuildMounts_PersistHomeDefault(t *testing.T) {
 	mc := &mockClient{}
 	cfg := newDefaultConfig()
 	cfg.Workspace.PersistHome = nil // default = true
+	// Disable MountHomeConfig to get a predictable mount count (2: workspace + home volume)
+	disabled := false
+	cfg.Auth.MountHomeConfig = &disabled
 
 	m, repoDir := newTestManager(t, mc, cfg)
 
@@ -354,6 +369,8 @@ func TestBuildMounts_PersistHomeFalse(t *testing.T) {
 	cfg := newDefaultConfig()
 	f := false
 	cfg.Workspace.PersistHome = &f
+	// Disable MountHomeConfig to get a predictable mount count (1: workspace only)
+	cfg.Auth.MountHomeConfig = &f
 
 	m, _ := newTestManager(t, mc, cfg)
 
@@ -860,4 +877,210 @@ func TestRemoveImage_NoImage(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Empty(t, mc.imageRemovedIDs, "ImageRemove should NOT be called when no image_id")
+}
+
+// --- Phase 7 Integration Tests: buildMounts SSH + Auth Config ---
+
+// TestBuildMounts_SSHAgent verifies that ForwardSSHAgent=true adds the SSH socket bind mount
+// on Linux when SSH_AUTH_SOCK points to a real socket.
+func TestBuildMounts_SSHAgent(t *testing.T) {
+	if runtime.GOOS == "darwin" {
+		t.Skip("SSH agent socket bind-mount is not supported on macOS")
+	}
+
+	// Create a real Unix socket to satisfy os.Stat + ModeSocket check
+	tmpDir := t.TempDir()
+	sockPath := filepath.Join(tmpDir, "ssh-agent.sock")
+
+	// Create an actual listener on the socket path so the file has ModeSocket type
+	ln, err := createUnixSocket(sockPath)
+	require.NoError(t, err, "failed to create test Unix socket")
+	defer ln.Close()
+
+	t.Setenv("SSH_AUTH_SOCK", sockPath)
+
+	mc := &mockClient{}
+	cfg := newDefaultConfig()
+	fwdSSH := true
+	cfg.Auth.ForwardSSHAgent = &fwdSSH
+
+	m, _ := newTestManager(t, mc, cfg)
+	mounts := m.buildMounts()
+
+	var sshMount *mount.Mount
+	for _, mt := range mounts {
+		if mt.Target == "/tmp/ssh-agent.sock" {
+			cp := mt
+			sshMount = &cp
+			break
+		}
+	}
+	require.NotNil(t, sshMount, "expected SSH agent mount at /tmp/ssh-agent.sock")
+	assert.Equal(t, sockPath, sshMount.Source)
+	assert.True(t, sshMount.ReadOnly, "SSH agent mount should be read-only")
+}
+
+// TestBuildMounts_SSHAgent_NoSocket verifies that when SSH_AUTH_SOCK is unset,
+// no SSH agent mount is added.
+func TestBuildMounts_SSHAgent_NoSocket(t *testing.T) {
+	if runtime.GOOS == "darwin" {
+		t.Skip("SSH agent socket bind-mount is not supported on macOS")
+	}
+
+	// Ensure SSH_AUTH_SOCK is unset
+	t.Setenv("SSH_AUTH_SOCK", "")
+
+	mc := &mockClient{}
+	cfg := newDefaultConfig()
+	fwdSSH := true
+	cfg.Auth.ForwardSSHAgent = &fwdSSH
+
+	m, _ := newTestManager(t, mc, cfg)
+	mounts := m.buildMounts()
+
+	for _, mt := range mounts {
+		assert.NotEqual(t, "/tmp/ssh-agent.sock", mt.Target, "should not mount SSH socket when SSH_AUTH_SOCK is unset")
+	}
+}
+
+// TestBuildMounts_AuthConfig verifies that MountHomeConfig=true (default) adds
+// auth config mounts with ".host" suffix for the claude-code harness.
+func TestBuildMounts_AuthConfig(t *testing.T) {
+	// The claude-code harness HomeConfigDir is "~/.claude".
+	// We need to ensure the expanded path exists for the stat check.
+	// Use a temp dir and override the HOME env var so expandHome returns our tmpDir.
+	tmpDir := t.TempDir()
+	t.Setenv("HOME", tmpDir)
+
+	// Create the ~/.claude directory inside our temp home
+	claudeDir := filepath.Join(tmpDir, ".claude")
+	require.NoError(t, os.MkdirAll(claudeDir, 0755))
+
+	mc := &mockClient{}
+	cfg := newDefaultConfig() // uses claude-code harness
+	mountHome := true
+	cfg.Auth.MountHomeConfig = &mountHome
+
+	m, _ := newTestManager(t, mc, cfg)
+	mounts := m.buildMounts()
+
+	var authMount *mount.Mount
+	for _, mt := range mounts {
+		if strings.HasSuffix(mt.Target, ".host") {
+			cp := mt
+			authMount = &cp
+			break
+		}
+	}
+	require.NotNil(t, authMount, "expected auth config mount with .host suffix")
+	assert.Equal(t, claudeDir, authMount.Source, "source should be expanded ~/.claude")
+	assert.Equal(t, "~/.claude.host", authMount.Target, "target should be ~/.claude.host")
+	assert.True(t, authMount.ReadOnly, "auth config mount should be read-only")
+}
+
+// TestBuildMounts_AuthConfig_Disabled verifies that MountHomeConfig=false
+// produces no auth config mounts.
+func TestBuildMounts_AuthConfig_Disabled(t *testing.T) {
+	mc := &mockClient{}
+	cfg := newDefaultConfig()
+	disabled := false
+	cfg.Auth.MountHomeConfig = &disabled
+
+	m, _ := newTestManager(t, mc, cfg)
+	mounts := m.buildMounts()
+
+	for _, mt := range mounts {
+		assert.False(t, strings.HasSuffix(mt.Target, ".host"),
+			"no auth config mounts expected when MountHomeConfig=false")
+	}
+}
+
+// --- Phase 7 Integration Tests: createContainer env vars and ports ---
+
+// makeLaunchMockForCreate sets up a mock suitable for createContainer tests.
+// It provides a valid build response and an image inspect so the full flow succeeds.
+func makeLaunchMockForCreate(t *testing.T) (*mockClient, *Manager) {
+	t.Helper()
+	buildJSON := `{"aux":{"ID":"sha256:testimage123"}}` + "\n"
+	mc := &mockClient{
+		imageBuildResp: types.ImageBuildResponse{
+			Body: io.NopCloser(strings.NewReader(buildJSON)),
+		},
+		imageInspectResp:    types.ImageInspect{ID: "sha256:testimage123"},
+		containerCreateResp: container.CreateResponse{ID: "container-abc"},
+		networkCreateID:     "net-xyz",
+	}
+	cfg := newDefaultConfig()
+	m, _ := newTestManager(t, mc, cfg)
+	require.NoError(t, m.cache.EnsureDir())
+	return mc, m
+}
+
+// TestCreateContainer_EnvVars verifies that ForwardEnv patterns result in matching
+// host env vars appearing in container.Config.Env.
+func TestCreateContainer_EnvVars(t *testing.T) {
+	t.Setenv("TEST_ZONE_VAR", "hello-zone")
+
+	mc, m := makeLaunchMockForCreate(t)
+	m.config.Auth.ForwardEnv = []string{"TEST_ZONE_VAR"}
+
+	// Trigger createContainer via a full launch flow (fresh container)
+	require.NoError(t, m.cache.SetImageID("sha256:testimage123"))
+	_, err := m.createContainer(context.Background(), "sha256:testimage123")
+	require.NoError(t, err)
+
+	require.NotNil(t, mc.lastContainerConfig)
+	assert.Contains(t, mc.lastContainerConfig.Env, "TEST_ZONE_VAR=hello-zone",
+		"forwarded env var should appear in container Config.Env")
+}
+
+// TestCreateContainer_Ports verifies that Workspace.Ports entries produce
+// correct HostConfig.PortBindings and Config.ExposedPorts.
+func TestCreateContainer_Ports(t *testing.T) {
+	mc, m := makeLaunchMockForCreate(t)
+	m.config.Workspace.Ports = []string{"3000:3000"}
+
+	require.NoError(t, m.cache.SetImageID("sha256:testimage123"))
+	_, err := m.createContainer(context.Background(), "sha256:testimage123")
+	require.NoError(t, err)
+
+	require.NotNil(t, mc.lastContainerConfig, "container config should be captured")
+	require.NotNil(t, mc.lastHostConfig, "host config should be captured")
+
+	// Verify ExposedPorts contains 3000/tcp
+	port3000, _ := nat.NewPort("tcp", "3000")
+	assert.Contains(t, mc.lastContainerConfig.ExposedPorts, port3000,
+		"ExposedPorts should contain 3000/tcp")
+
+	// Verify PortBindings maps 3000/tcp -> host port 3000
+	bindings, ok := mc.lastHostConfig.PortBindings[port3000]
+	require.True(t, ok, "PortBindings should contain 3000/tcp")
+	require.Len(t, bindings, 1)
+	assert.Equal(t, "3000", bindings[0].HostPort)
+}
+
+// TestCreateContainer_EnvFile verifies that Auth.EnvFile vars appear in Config.Env.
+func TestCreateContainer_EnvFile(t *testing.T) {
+	// Create a temp .env file
+	tmpDir := t.TempDir()
+	envPath := filepath.Join(tmpDir, ".env")
+	require.NoError(t, os.WriteFile(envPath, []byte("MY_SECRET=abc123\nOTHER_VAR=value\n"), 0644))
+
+	mc, m := makeLaunchMockForCreate(t)
+	m.config.Auth.EnvFile = envPath // absolute path
+
+	require.NoError(t, m.cache.SetImageID("sha256:testimage123"))
+	_, err := m.createContainer(context.Background(), "sha256:testimage123")
+	require.NoError(t, err)
+
+	require.NotNil(t, mc.lastContainerConfig)
+	env := mc.lastContainerConfig.Env
+	assert.Contains(t, env, "MY_SECRET=abc123", "env file var MY_SECRET should be in container env")
+	assert.Contains(t, env, "OTHER_VAR=value", "env file var OTHER_VAR should be in container env")
+}
+
+// createUnixSocket creates a Unix domain socket at path and returns the net.Listener.
+// Used in SSH agent tests to create a real socket file that satisfies os.ModeSocket check.
+func createUnixSocket(path string) (interface{ Close() error }, error) {
+	return net.Listen("unix", path)
 }
