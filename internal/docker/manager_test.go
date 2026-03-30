@@ -34,19 +34,19 @@ import (
 // mockClient is a configurable mock implementation of DockerClient.
 // Fields are set before each test to control return values.
 type mockClient struct {
-	pingErr          error
-	pingResp         types.Ping
-	networkCreateID  string
-	networkCreateErr error
-	networkRemoveErr error
+	pingErr             error
+	pingResp            types.Ping
+	networkCreateID     string
+	networkCreateErr    error
+	networkRemoveErr    error
 	containerCreateResp container.CreateResponse
 	containerCreateErr  error
-	imageBuildResp   types.ImageBuildResponse
-	imageBuildErr    error
-	imageInspectResp types.ImageInspect
-	imageInspectErr  error
-	imageRemoveErr   error
-	volumeRemoveErr  error
+	imageBuildResp      types.ImageBuildResponse
+	imageBuildErr       error
+	imageInspectResp    types.ImageInspect
+	imageInspectErr     error
+	imageRemoveErr      error
+	volumeRemoveErr     error
 
 	// Launch state machine fields
 	containerInspectResp container.InspectResponse
@@ -92,6 +92,14 @@ func (m *mockClient) ContainerCreate(ctx context.Context, cfg *container.Config,
 	m.lastContainerConfig = cfg
 	m.lastHostConfig = hostConfig
 	return m.containerCreateResp, m.containerCreateErr
+}
+
+func (m *mockClient) ContainerList(ctx context.Context, options container.ListOptions) ([]container.Summary, error) {
+	return nil, nil
+}
+
+func (m *mockClient) ContainerLogs(ctx context.Context, ctr string, options container.LogsOptions) (io.ReadCloser, error) {
+	return io.NopCloser(strings.NewReader("")), nil
 }
 
 func (m *mockClient) ContainerStart(ctx context.Context, containerID string, options container.StartOptions) error {
@@ -452,7 +460,7 @@ func makeLaunchMock(t *testing.T, status string, oomKilled bool) (*mockClient, *
 		imageBuildResp: types.ImageBuildResponse{
 			Body: io.NopCloser(strings.NewReader(buildJSON)),
 		},
-		imageInspectResp: types.ImageInspect{ID: "sha256:testimage123"},
+		imageInspectResp:    types.ImageInspect{ID: "sha256:testimage123"},
 		containerCreateResp: container.CreateResponse{ID: "container-abc"},
 		networkCreateID:     "net-xyz",
 		containerInspectResp: container.InspectResponse{

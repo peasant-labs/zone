@@ -2,23 +2,30 @@
 package docker
 
 import (
+	"bufio"
+	"bytes"
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
+	"time"
 
-	dockerclient "github.com/docker/docker/client"
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/api/types/strslice"
+	dockerclient "github.com/docker/docker/client"
 	"github.com/docker/docker/errdefs"
+	"github.com/docker/docker/pkg/stdcopy"
 
 	"github.com/peasant-labs/zone/internal/cache"
 	"github.com/peasant-labs/zone/internal/config"
@@ -473,4 +480,138 @@ func (m *Manager) Shell(ctx context.Context) error {
 		shell = "bash"
 	}
 	return m.attachFn(containerID, []string{shell}, false)
+}
+
+// ContainerInfo holds metadata for a zone-managed container returned by List.
+type ContainerInfo struct {
+	Name      string    `json:"name"`
+	Harness   string    `json:"harness"`
+	Status    string    `json:"status"`
+	State     string    `json:"state"`
+	StartedAt time.Time `json:"started_at"`
+	RepoPath  string    `json:"repo_path"`
+	ID        string    `json:"id"`
+}
+
+// LogsOpts configures Manager.Logs behavior.
+type LogsOpts struct {
+	Follow bool
+	Tail   string // "all" or a number string like "100"
+	JSON   bool
+}
+
+// List queries Docker for all containers with the com.zone.managed=true label.
+// Does not require a zone.toml — works globally across all repos.
+func (m *Manager) List(ctx context.Context) ([]ContainerInfo, error) {
+	f := filters.NewArgs()
+	f.Add("label", "com.zone.managed=true")
+
+	containers, err := m.client.ContainerList(ctx, container.ListOptions{
+		All:     true,
+		Filters: f,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("list containers: %w", err)
+	}
+
+	result := make([]ContainerInfo, 0, len(containers))
+	for _, c := range containers {
+		name := ""
+		if len(c.Names) > 0 {
+			name = strings.TrimPrefix(c.Names[0], "/")
+		}
+		info := ContainerInfo{
+			Name:      name,
+			Harness:   c.Labels["com.zone.harness"],
+			Status:    c.Status,
+			State:     c.State,
+			RepoPath:  c.Labels["com.zone.repo-path"],
+			ID:        c.ID,
+			StartedAt: time.Unix(c.Created, 0),
+		}
+		result = append(result, info)
+	}
+
+	return result, nil
+}
+
+// Logs streams container logs to the provided writer. Uses stdcopy.StdCopy for
+// non-TTY containers (which is how zone creates all containers).
+// When opts.JSON is true, outputs a JSON array of {timestamp, stream, line} objects.
+func (m *Manager) Logs(ctx context.Context, w io.Writer, errW io.Writer, opts LogsOpts) error {
+	containerID, err := m.cache.ContainerID()
+	if err != nil || containerID == "" {
+		return ErrNoContainer
+	}
+
+	logOpts := container.LogsOptions{
+		ShowStdout: true,
+		ShowStderr: true,
+		Follow:     opts.Follow,
+		Tail:       opts.Tail,
+		Timestamps: true,
+	}
+
+	rc, err := m.client.ContainerLogs(ctx, containerID, logOpts)
+	if err != nil {
+		return fmt.Errorf("get logs: %w", err)
+	}
+	defer rc.Close()
+
+	if opts.JSON {
+		var stdBuf, stderrBuf bytes.Buffer
+		if _, copyErr := stdcopy.StdCopy(&stdBuf, &stderrBuf, rc); copyErr != nil {
+			return copyErr
+		}
+
+		type LogEntry struct {
+			Timestamp string `json:"timestamp"`
+			Stream    string `json:"stream"`
+			Line      string `json:"line"`
+		}
+
+		entries := make([]LogEntry, 0)
+		for _, pair := range []struct {
+			buf    *bytes.Buffer
+			stream string
+		}{
+			{buf: &stdBuf, stream: "stdout"},
+			{buf: &stderrBuf, stream: "stderr"},
+		} {
+			scanner := bufio.NewScanner(pair.buf)
+			for scanner.Scan() {
+				line := scanner.Text()
+				ts, content, _ := strings.Cut(line, " ")
+				entries = append(entries, LogEntry{Timestamp: ts, Stream: pair.stream, Line: content})
+			}
+			if err := scanner.Err(); err != nil {
+				return err
+			}
+		}
+
+		b, err := json.MarshalIndent(entries, "", "  ")
+		if err != nil {
+			return fmt.Errorf("marshal logs json: %w", err)
+		}
+		_, _ = fmt.Fprintln(w, string(b))
+		return nil
+	}
+
+	_, err = stdcopy.StdCopy(w, errW, rc)
+	return err
+}
+
+// Status returns the full container inspection result for the current repo's container.
+func (m *Manager) Status(ctx context.Context) (*container.InspectResponse, error) {
+	containerID, err := m.cache.ContainerID()
+	if err != nil || containerID == "" {
+		return nil, ErrNoContainer
+	}
+
+	info, err := m.client.ContainerInspect(ctx, containerID)
+	if err != nil {
+		return nil, fmt.Errorf("inspect container: %w", err)
+	}
+
+	return &info, nil
 }

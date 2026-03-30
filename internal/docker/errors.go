@@ -10,6 +10,9 @@ var (
 
 	// ErrNoContainer is returned when an operation requires a running container but none exists.
 	ErrNoContainer = errors.New("no container is running for this repo. Run `zone launch` first")
+
+	// ErrNetworkUnsupported is returned when network sandboxing is requested on an unsupported platform.
+	ErrNetworkUnsupported = errors.New("network sandboxing is not supported on this platform")
 )
 
 // SecurityConfig holds hardened container security settings per spec section 12.
