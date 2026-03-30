@@ -351,6 +351,12 @@ func (m *Manager) Stop(ctx context.Context) error {
 	if err := m.cache.SetNetworkID(""); err != nil {
 		return fmt.Errorf("clear network ID: %w", err)
 	}
+
+	// Run post_stop hooks (CFG-18) — best-effort, warn on failure
+	if len(m.config.Hooks.PostStop) > 0 {
+		_ = runHooks(m.config.Hooks.PostStop, m.repoDir, false, os.Stderr)
+	}
+
 	return nil
 }
 

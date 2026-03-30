@@ -440,8 +440,12 @@ func TestRemoveNetwork_OtherError(t *testing.T) {
 
 // makeLaunchMock sets up a mockClient and Manager for Launch tests.
 // The mock image build returns a synthetic image ID; ContainerCreate returns a synthetic container ID.
+// Sets ANTHROPIC_API_KEY so the pre-launch env validation passes for the claude-code harness.
 func makeLaunchMock(t *testing.T, status string, oomKilled bool) (*mockClient, *Manager, string) {
 	t.Helper()
+
+	// Satisfy claude-code required env var validation
+	t.Setenv("ANTHROPIC_API_KEY", "test-key-for-launch-tests")
 
 	buildJSON := `{"aux":{"ID":"sha256:testimage123"}}` + "\n"
 	mc := &mockClient{
@@ -463,6 +467,9 @@ func makeLaunchMock(t *testing.T, status string, oomKilled bool) (*mockClient, *
 	}
 
 	cfg := newDefaultConfig()
+	// Disable MountHomeConfig to avoid side-effects from real ~/.claude presence
+	disabled := false
+	cfg.Auth.MountHomeConfig = &disabled
 	m, tmpDir := newTestManager(t, mc, cfg)
 
 	// Prime cache so EnsureDir works for lock
@@ -593,6 +600,8 @@ func TestLaunchStateMachine_ExitedOOM(t *testing.T) {
 // TestLaunchStateMachine_StaleID verifies that a "not found" inspect response causes
 // the cache to be cleaned and a fresh build to proceed.
 func TestLaunchStateMachine_StaleID(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "test-key-stale")
+
 	buildJSON := `{"aux":{"ID":"sha256:testimage123"}}` + "\n"
 	mc := &mockClient{
 		imageBuildResp: types.ImageBuildResponse{
@@ -606,6 +615,8 @@ func TestLaunchStateMachine_StaleID(t *testing.T) {
 	}
 
 	cfg := newDefaultConfig()
+	disabled := false
+	cfg.Auth.MountHomeConfig = &disabled
 	m, _ := newTestManager(t, mc, cfg)
 	require.NoError(t, m.cache.EnsureDir())
 	require.NoError(t, m.cache.SetContainerID("stale-container-id"))
@@ -1083,4 +1094,160 @@ func TestCreateContainer_EnvFile(t *testing.T) {
 // Used in SSH agent tests to create a real socket file that satisfies os.ModeSocket check.
 func createUnixSocket(path string) (interface{ Close() error }, error) {
 	return net.Listen("unix", path)
+}
+
+// --- Phase 7 Task 2 Tests: Launch validation, hooks, buildImage proxy args ---
+
+// makeLaunchMockWithAPIKey sets up a full Launch mock that satisfies the claude-code
+// harness required env var check (ANTHROPIC_API_KEY must be set in host env).
+func makeLaunchMockWithAPIKey(t *testing.T) (*mockClient, *Manager) {
+	t.Helper()
+	// Build a fresh imageBuildResp each time so the Body reader isn't exhausted
+	buildJSON := `{"aux":{"ID":"sha256:testimage123"}}` + "\n"
+	mc := &mockClient{
+		imageBuildResp: types.ImageBuildResponse{
+			Body: io.NopCloser(strings.NewReader(buildJSON)),
+		},
+		imageInspectResp:    types.ImageInspect{ID: "sha256:testimage123"},
+		containerCreateResp: container.CreateResponse{ID: "container-abc"},
+		networkCreateID:     "net-xyz",
+	}
+	cfg := newDefaultConfig()
+	// Disable MountHomeConfig to avoid side-effects from real ~/.claude presence
+	disabled := false
+	cfg.Auth.MountHomeConfig = &disabled
+	m, _ := newTestManager(t, mc, cfg)
+	require.NoError(t, m.cache.EnsureDir())
+	return mc, m
+}
+
+// TestLaunch_RequiredEnvValidation verifies that Launch fails with a descriptive error
+// when ANTHROPIC_API_KEY is not set (claude-code harness).
+func TestLaunch_RequiredEnvValidation(t *testing.T) {
+	_, m := makeLaunchMockWithAPIKey(t)
+
+	// Ensure the required key is completely absent (not just empty)
+	t.Setenv("ANTHROPIC_API_KEY", "")
+	require.NoError(t, os.Unsetenv("ANTHROPIC_API_KEY"))
+	t.Cleanup(func() {
+		// t.Setenv already registered cleanup to restore the prior value
+	})
+
+	err := m.Launch(context.Background(), LaunchOpts{})
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "ANTHROPIC_API_KEY",
+		"error should name the missing required env var")
+}
+
+// TestLaunch_RequiredEnvValidation_Satisfied verifies that Launch proceeds past validation
+// when ANTHROPIC_API_KEY is set.
+func TestLaunch_RequiredEnvValidation_Satisfied(t *testing.T) {
+	_, m := makeLaunchMockWithAPIKey(t)
+
+	t.Setenv("ANTHROPIC_API_KEY", "test-key-satisfied")
+
+	// Launch should NOT fail at the validation step.
+	// It may fail at a subsequent step (the mock doesn't return a real image ID from
+	// aux), but the error must not contain "required environment variable".
+	err := m.Launch(context.Background(), LaunchOpts{})
+	if err != nil {
+		assert.NotContains(t, err.Error(), "required environment variable",
+			"error should not be a validation error when ANTHROPIC_API_KEY is set")
+	}
+}
+
+// TestLaunch_PreBuildHook verifies that a successful pre_build hook does not block Launch.
+func TestLaunch_PreBuildHook(t *testing.T) {
+	_, m := makeLaunchMockWithAPIKey(t)
+	t.Setenv("ANTHROPIC_API_KEY", "test-key-hooks")
+
+	m.config.Hooks.PreBuild = []string{"echo prebuild-ran"}
+
+	// Should not error due to the hook (echo always succeeds)
+	err := m.Launch(context.Background(), LaunchOpts{})
+	// If there is an error, it must not be from the pre_build hook.
+	if err != nil {
+		assert.NotContains(t, err.Error(), "pre_build",
+			"Launch should not fail due to successful pre_build hook")
+	}
+}
+
+// TestLaunch_PreBuildHook_Failure verifies that a failing pre_build hook aborts Launch.
+func TestLaunch_PreBuildHook_Failure(t *testing.T) {
+	_, m := makeLaunchMockWithAPIKey(t)
+	t.Setenv("ANTHROPIC_API_KEY", "test-key-hook-fail")
+
+	m.config.Hooks.PreBuild = []string{"false"} // "false" always exits non-zero
+
+	err := m.Launch(context.Background(), LaunchOpts{})
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "pre_build",
+		"error should mention pre_build when hook fails")
+}
+
+// TestStop_PostStopHook verifies that a successful post_stop hook does not affect Stop() return.
+func TestStop_PostStopHook(t *testing.T) {
+	mc := &mockClient{}
+	cfg := newDefaultConfig()
+	m, _ := newTestManager(t, mc, cfg)
+
+	require.NoError(t, m.cache.EnsureDir())
+	require.NoError(t, m.cache.SetContainerID("container-abc"))
+	require.NoError(t, m.cache.SetNetworkID("net-xyz"))
+
+	m.config.Hooks.PostStop = []string{"echo poststop-ran"}
+
+	err := m.Stop(context.Background())
+	require.NoError(t, err, "Stop should return nil when post_stop hook succeeds")
+}
+
+// TestStop_PostStopHook_Failure verifies that a failing post_stop hook is swallowed —
+// Stop() still returns nil (post_stop hooks are warn-only).
+func TestStop_PostStopHook_Failure(t *testing.T) {
+	mc := &mockClient{}
+	cfg := newDefaultConfig()
+	m, _ := newTestManager(t, mc, cfg)
+
+	require.NoError(t, m.cache.EnsureDir())
+	require.NoError(t, m.cache.SetContainerID("container-abc"))
+	require.NoError(t, m.cache.SetNetworkID("net-xyz"))
+
+	m.config.Hooks.PostStop = []string{"false"} // always fails
+
+	err := m.Stop(context.Background())
+	require.NoError(t, err, "Stop should return nil even when post_stop hook fails")
+}
+
+// TestBuildImage_ProxyBuildArgs verifies that a configured HTTP proxy is passed as
+// a build-arg to ImageBuild.
+func TestBuildImage_ProxyBuildArgs(t *testing.T) {
+	buildJSON := `{"aux":{"ID":"sha256:testimage123"}}` + "\n"
+	mc := &mockClient{
+		imageBuildResp: types.ImageBuildResponse{
+			Body: io.NopCloser(strings.NewReader(buildJSON)),
+		},
+		imageInspectResp: types.ImageInspect{ID: "sha256:testimage123"},
+	}
+
+	cfg := newDefaultConfig()
+	disabled := false
+	cfg.Auth.MountHomeConfig = &disabled
+	cfg.Network.HTTPProxy = "http://proxy:8080"
+
+	m, _ := newTestManager(t, mc, cfg)
+	require.NoError(t, m.cache.EnsureDir())
+
+	_, err := m.buildImage(context.Background(), false)
+	require.NoError(t, err)
+
+	args := mc.lastBuildOptions.BuildArgs
+	require.NotNil(t, args, "BuildArgs should be populated when proxy is configured")
+
+	val, ok := args["HTTP_PROXY"]
+	require.True(t, ok, "HTTP_PROXY should be in BuildArgs")
+	assert.Equal(t, "http://proxy:8080", *val)
+
+	valLower, ok := args["http_proxy"]
+	require.True(t, ok, "http_proxy (lowercase) should be in BuildArgs")
+	assert.Equal(t, "http://proxy:8080", *valLower)
 }

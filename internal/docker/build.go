@@ -150,12 +150,17 @@ func (m *Manager) buildImage(ctx context.Context, noCache bool) (string, error) 
 	}
 	defer closer()
 
+	// Proxy build-args (CFG-15)
+	httpProxy, httpsProxy, noProxy := resolveProxy(&m.config.Network)
+	buildArgs := proxyBuildArgs(httpProxy, httpsProxy, noProxy)
+
 	containerName := ContainerName(m.repoDir)
 	buildResp, err := m.client.ImageBuild(ctx, ctx2, types.ImageBuildOptions{
 		Tags:       []string{containerName + ":latest"},
 		Dockerfile: "Dockerfile",
 		Remove:     true,
 		NoCache:    noCache,
+		BuildArgs:  buildArgs,
 	})
 	if err != nil {
 		return "", fmt.Errorf("image build: %w", err)

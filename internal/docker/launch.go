@@ -57,6 +57,20 @@ func (m *Manager) Launch(ctx context.Context, opts LaunchOpts) error {
 	}
 	// NOTE: lock.Release() is called EXPLICITLY before attach — do NOT defer here.
 
+	// Step 1.5: Pre-launch env validation (CFG-11)
+	h, harnessErr := harness.Get(m.config.Zone.Harness, &m.config.Harness)
+	if harnessErr == nil {
+		required := h.RequiredEnvVars()
+		// Also include custom harness required_env if applicable
+		if len(m.config.Harness.RequiredEnv) > 0 {
+			required = append(required, m.config.Harness.RequiredEnv...)
+		}
+		if err := ValidateRequiredEnv(required, h.Name(), m.config.Auth.EnvFile, m.repoDir); err != nil {
+			lock.Release()
+			return err
+		}
+	}
+
 	// Step 2: inspect any existing container.
 	containerID, err := m.cache.ContainerID()
 	if err != nil {
@@ -118,6 +132,14 @@ func (m *Manager) Launch(ctx context.Context, opts LaunchOpts) error {
 				_ = m.cache.SetNetworkID("")
 				// Fall through to build path.
 			}
+		}
+	}
+
+	// Step 2.5: Run pre_build hooks (CFG-18)
+	if len(m.config.Hooks.PreBuild) > 0 {
+		if err := runHooks(m.config.Hooks.PreBuild, m.repoDir, true, os.Stderr); err != nil {
+			lock.Release()
+			return fmt.Errorf("pre_build: %w", err)
 		}
 	}
 
