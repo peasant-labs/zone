@@ -48,4 +48,7 @@ func init() {
 	rootCmd.PersistentFlags().Bool("debug", false, "Maximum verbosity including raw API responses")
 	rootCmd.PersistentFlags().BoolP("quiet", "q", false, "Suppress all non-essential output")
 	rootCmd.PersistentFlags().Bool("plain", false, "Disable TUI and use plain text output")
+
+	rootCmd.SilenceErrors = true
+	rootCmd.SilenceUsage = true
 }

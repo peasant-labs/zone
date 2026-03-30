@@ -32,7 +32,6 @@ var validateCmd = &cobra.Command{
 				allErrors = append(allErrors, config.ValidateUnknownKeys(guke.Keys, guke.File)...)
 			} else {
 				cmd.PrintErrln(fmt.Sprintf("Error: %v", globalErr))
-				os.Exit(2)
 				return globalErr
 			}
 		}
@@ -46,7 +45,6 @@ var validateCmd = &cobra.Command{
 			} else {
 				// Fatal parse error.
 				cmd.PrintErrln(fmt.Sprintf("Error: %v", repoErr))
-				os.Exit(2)
 				return repoErr
 			}
 		}
@@ -80,7 +78,7 @@ var validateCmd = &cobra.Command{
 		cmd.PrintErrln(allErrors.Error())
 
 		if allErrors.HasErrors() {
-			os.Exit(2) // exit 2 for config errors per spec section 8
+			return fmt.Errorf("validation: %w", config.ErrNoConfig)
 		}
 
 		// Warnings only — exit 0 but print them.
