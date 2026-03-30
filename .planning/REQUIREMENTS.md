@@ -120,13 +120,13 @@
 
 ### Developer Experience
 
-- [ ] **DX-01**: Structured exit codes: 0 success, 1 generic, 2 config, 3 docker, 4 network, 5 cache, 6 no container
-- [ ] **DX-02**: All error messages include remediation hints
+- [x] **DX-01**: Structured exit codes: 0 success, 1 generic, 2 config, 3 docker, 4 network, 5 cache, 6 no container
+- [x] **DX-02**: All error messages include remediation hints
 - [ ] **DX-03**: `--json` flag on status, ls, config, logs for machine-readable output
-- [ ] **DX-04**: Signal handling: Ctrl+C sends SIGINT to harness, container stays alive
-- [ ] **DX-05**: Context propagation: all Docker SDK calls take context for graceful cancellation
-- [ ] **DX-06**: Harness process exit causes container stop; zone launch returns exit code 0
-- [ ] **DX-07**: `zone stop` cleanup: stop container, remove container, remove network, clear IDs from cache
+- [x] **DX-04**: Signal handling: Ctrl+C sends SIGINT to harness, container stays alive
+- [x] **DX-05**: Context propagation: all Docker SDK calls take context for graceful cancellation
+- [x] **DX-06**: Harness process exit causes container stop; zone launch returns exit code 0
+- [x] **DX-07**: `zone stop` cleanup: stop container, remove container, remove network, clear IDs from cache
 - [ ] **DX-08**: Command aliases: launch/up, stop/down, ls/list, logs/log, status/st
 - [ ] **DX-09**: Help text with 2-4 usage examples per command
 - [x] **DX-10**: GoReleaser configuration for binary distribution
@@ -258,13 +258,13 @@
 | CAC-04 | Phase 3 | Complete |
 | CAC-05 | Phase 3 | Complete |
 | CAC-06 | Phase 3 | Complete |
-| DX-01 | Phase 8 | Pending |
-| DX-02 | Phase 8 | Pending |
+| DX-01 | Phase 8 | Complete |
+| DX-02 | Phase 8 | Complete |
 | DX-03 | Phase 8 | Pending |
-| DX-04 | Phase 8 | Pending |
-| DX-05 | Phase 8 | Pending |
-| DX-06 | Phase 8 | Pending |
-| DX-07 | Phase 8 | Pending |
+| DX-04 | Phase 8 | Complete |
+| DX-05 | Phase 8 | Complete |
+| DX-06 | Phase 8 | Complete |
+| DX-07 | Phase 8 | Complete |
 | DX-08 | Phase 8 | Pending |
 | DX-09 | Phase 8 | Pending |
 | DX-10 | Phase 1 | Complete |

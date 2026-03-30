@@ -149,7 +149,7 @@ Plans:
 **Plans**: 3 plans
 Plans:
 - [x] 08-01-PLAN.md — Implement init, ls, logs, status commands + Manager.List/Logs/Status + DockerClient interface extension
-- [ ] 08-02-PLAN.md — Exit code taxonomy (0-6), cmd/errors.go remediation hints, signal.NotifyContext on all Docker commands
+- [x] 08-02-PLAN.md — Exit code taxonomy (0-6), cmd/errors.go remediation hints, signal.NotifyContext on all Docker commands
 - [ ] 08-03-PLAN.md — Help text with examples for all 15 commands, --port/-P flag, JSON output, aliases verification, DX integration tests
 
 ### Phase 9: TUI Layer
