@@ -9,20 +9,20 @@
 
 - [ ] **CLI-01**: User can run `zone init` to scaffold a `zone.toml` in the current directory with interactive harness selection
 - [ ] **CLI-02**: User can run `zone init --harness <name>` to scaffold non-interactively
-- [x] **CLI-03**: User can run `zone launch` to build (if needed) and attach to a container for this repo
-- [x] **CLI-04**: User can run `zone launch --headless -p "task"` to run a detached agent with a prompt
-- [x] **CLI-05**: User can run `zone launch --harness <name>` with no zone.toml for zero-config quickstart
-- [x] **CLI-06**: User can run `zone join` to attach a new shell to a running container without re-running the harness
-- [x] **CLI-07**: User can run `zone exec -- <cmd>` to run a one-off command inside the running container
-- [x] **CLI-08**: User can run `zone shell` to open an interactive shell even if no harness is running
-- [x] **CLI-09**: User can run `zone build` to force-rebuild the Docker image without launching
-- [x] **CLI-10**: User can run `zone stop` to stop and remove the container and network, retaining cache
-- [x] **CLI-11**: User can run `zone restart` to stop and relaunch the container
+- [ ] **CLI-03**: User can run `zone launch` to build (if needed) and attach to a container for this repo
+- [ ] **CLI-04**: User can run `zone launch --headless -p "task"` to run a detached agent with a prompt
+- [ ] **CLI-05**: User can run `zone launch --harness <name>` with no zone.toml for zero-config quickstart
+- [ ] **CLI-06**: User can run `zone join` to attach a new shell to a running container without re-running the harness
+- [ ] **CLI-07**: User can run `zone exec -- <cmd>` to run a one-off command inside the running container
+- [ ] **CLI-08**: User can run `zone shell` to open an interactive shell even if no harness is running
+- [ ] **CLI-09**: User can run `zone build` to force-rebuild the Docker image without launching
+- [ ] **CLI-10**: User can run `zone stop` to stop and remove the container and network, retaining cache
+- [ ] **CLI-11**: User can run `zone restart` to stop and relaunch the container
 - [ ] **CLI-12**: User can run `zone ls` to list all zone containers across all repos
 - [ ] **CLI-13**: User can run `zone logs` to view harness output, with `--follow` for live tailing
 - [ ] **CLI-14**: User can run `zone logs --build` to view the last Docker build log
-- [x] **CLI-15**: User can run `zone clean` to remove .zone/ cache and optionally Docker image
-- [x] **CLI-16**: User can run `zone destroy` to fully tear down container, image, network, and cache
+- [ ] **CLI-15**: User can run `zone clean` to remove .zone/ cache and optionally Docker image
+- [ ] **CLI-16**: User can run `zone destroy` to fully tear down container, image, network, and cache
 - [ ] **CLI-17**: User can run `zone status` to see container state, harness, uptime, ports, resources
 - [ ] **CLI-18**: User can run `zone config` to show effective merged config with source annotations
 - [ ] **CLI-19**: User can run `zone validate` to check zone.toml validity without launching
@@ -40,49 +40,49 @@
 - [x] **CFG-07**: `zone config` shows merged result with source annotations (global vs repo)
 - [x] **CFG-08**: `zone config --json` outputs machine-readable merged config
 - [x] **CFG-09**: Config schema version field (`version = 1`) is validated on parse
-- [ ] **CFG-10**: Environment variable forwarding supports glob patterns (e.g., `AWS_*`)
-- [ ] **CFG-11**: Pre-launch validation checks required env vars are set before Docker build starts
+- [x] **CFG-10**: Environment variable forwarding supports glob patterns (e.g., `AWS_*`)
+- [x] **CFG-11**: Pre-launch validation checks required env vars are set before Docker build starts
 - [ ] **CFG-12**: SSH agent forwarding mounts socket when `forward_ssh_agent = true`
 - [ ] **CFG-13**: Auth config uses copy-on-start strategy (writable copy in container, host preserved)
-- [ ] **CFG-14**: `.env` file support via `auth.env_file` config key
-- [x] **CFG-15**: Proxy support (http_proxy, https_proxy, no_proxy) with host auto-detection
-- [x] **CFG-16**: Port forwarding from config (`ports = ["3000:3000"]`)
-- [x] **CFG-17**: Resource limits from config (memory, cpus, pids_limit)
-- [x] **CFG-18**: Hooks support (pre_build, post_stop shell commands)
+- [x] **CFG-14**: `.env` file support via `auth.env_file` config key
+- [ ] **CFG-15**: Proxy support (http_proxy, https_proxy, no_proxy) with host auto-detection
+- [ ] **CFG-16**: Port forwarding from config (`ports = ["3000:3000"]`)
+- [ ] **CFG-17**: Resource limits from config (memory, cpus, pids_limit)
+- [ ] **CFG-18**: Hooks support (pre_build, post_stop shell commands)
 - [x] **CFG-19**: Extra mounts default to read-only, require explicit `:rw` for write
-- [x] **CFG-20**: Persistent home volume via named Docker volume (survives container recreation)
+- [ ] **CFG-20**: Persistent home volume via named Docker volume (survives container recreation)
 
 ### Harness System
 
-- [x] **HAR-01**: Harness interface defines identity, installation, runtime, dependencies, shell, lifecycle methods
-- [x] **HAR-02**: BaseHarness provides default implementations for optional methods
-- [x] **HAR-03**: Factory registry maps harness names to constructors
-- [x] **HAR-04**: `claude-code` harness is fully implemented with install, health check, env vars, config dir
-- [x] **HAR-05**: `opencode`, `gemini-cli`, `aider`, `codex-cli` harnesses return descriptive "not yet implemented" errors
-- [x] **HAR-06**: `custom` harness supports install_commands, entrypoint_command, config_dirs, required_env, health_check, aliases, shell_rc
-- [x] **HAR-07**: Each harness validates only its supported config keys; cross-harness keys produce specific errors
-- [x] **HAR-08**: HarnessConfig is a typed struct (not map[string]interface{})
-- [x] **HAR-09**: `skip_permissions` for claude-code defaults to false with security warning in init wizard
-- [x] **HAR-10**: `--prompt`/`-p` flag translates to harness-appropriate prompt flag automatically
+- [ ] **HAR-01**: Harness interface defines identity, installation, runtime, dependencies, shell, lifecycle methods
+- [ ] **HAR-02**: BaseHarness provides default implementations for optional methods
+- [ ] **HAR-03**: Factory registry maps harness names to constructors
+- [ ] **HAR-04**: `claude-code` harness is fully implemented with install, health check, env vars, config dir
+- [ ] **HAR-05**: `opencode`, `gemini-cli`, `aider`, `codex-cli` harnesses return descriptive "not yet implemented" errors
+- [ ] **HAR-06**: `custom` harness supports install_commands, entrypoint_command, config_dirs, required_env, health_check, aliases, shell_rc
+- [ ] **HAR-07**: Each harness validates only its supported config keys; cross-harness keys produce specific errors
+- [ ] **HAR-08**: HarnessConfig is a typed struct (not map[string]interface{})
+- [ ] **HAR-09**: `skip_permissions` for claude-code defaults to false with security warning in init wizard
+- [ ] **HAR-10**: `--prompt`/`-p` flag translates to harness-appropriate prompt flag automatically
 
 ### Docker Management
 
-- [x] **DOC-01**: Dockerfile generated from Go text/template with go:embed
-- [x] **DOC-02**: Entrypoint script generated from template with `exec` for proper PID 1 signal handling
-- [x] **DOC-03**: Shell RC file generated from template with aliases, prompt, welcome message
-- [x] **DOC-04**: Non-root `zone` user created with UID matching host user
-- [x] **DOC-05**: Sudo scoped to package managers only (apt-get, pip, npm)
-- [x] **DOC-06**: Container created with `no-new-privileges`, capability dropping, pids limit
-- [x] **DOC-07**: Deterministic container naming from repo absolute path (hash-based)
-- [x] **DOC-08**: Docker labels applied for discovery by `zone ls`
-- [x] **DOC-09**: Idempotent launch: reattach if running, handle paused/exited/dead/stale states
-- [x] **DOC-10**: Config change detection warns user to restart when config hash differs
-- [x] **DOC-11**: Docker SDK used for build/create/start/stop/inspect; context propagation for graceful cancel
-- [x] **DOC-12**: Build progress streamed from Docker SDK with proper response body cleanup
-- [x] **DOC-13**: Git safe.directory configured in entrypoint for workspace mount
-- [x] **DOC-14**: Git user.name and user.email forwarded from host
-- [x] **DOC-15**: macOS username symlink compatibility in Dockerfile
-- [x] **DOC-16**: Root UID detection skips user creation (CI environments)
+- [ ] **DOC-01**: Dockerfile generated from Go text/template with go:embed
+- [ ] **DOC-02**: Entrypoint script generated from template with `exec` for proper PID 1 signal handling
+- [ ] **DOC-03**: Shell RC file generated from template with aliases, prompt, welcome message
+- [ ] **DOC-04**: Non-root `zone` user created with UID matching host user
+- [ ] **DOC-05**: Sudo scoped to package managers only (apt-get, pip, npm)
+- [ ] **DOC-06**: Container created with `no-new-privileges`, capability dropping, pids limit
+- [ ] **DOC-07**: Deterministic container naming from repo absolute path (hash-based)
+- [ ] **DOC-08**: Docker labels applied for discovery by `zone ls`
+- [ ] **DOC-09**: Idempotent launch: reattach if running, handle paused/exited/dead/stale states
+- [ ] **DOC-10**: Config change detection warns user to restart when config hash differs
+- [ ] **DOC-11**: Docker SDK used for build/create/start/stop/inspect; context propagation for graceful cancel
+- [ ] **DOC-12**: Build progress streamed from Docker SDK with proper response body cleanup
+- [ ] **DOC-13**: Git safe.directory configured in entrypoint for workspace mount
+- [ ] **DOC-14**: Git user.name and user.email forwarded from host
+- [ ] **DOC-15**: macOS username symlink compatibility in Dockerfile
+- [ ] **DOC-16**: Root UID detection skips user creation (CI environments)
 
 ### Network Sandboxing
 
@@ -168,20 +168,20 @@
 |-------------|-------|--------|
 | CLI-01 | Phase 8 | Pending |
 | CLI-02 | Phase 8 | Pending |
-| CLI-03 | Phase 6 | Complete |
-| CLI-04 | Phase 6 | Complete |
-| CLI-05 | Phase 6 | Complete |
-| CLI-06 | Phase 6 | Complete |
-| CLI-07 | Phase 6 | Complete |
-| CLI-08 | Phase 6 | Complete |
-| CLI-09 | Phase 6 | Complete |
-| CLI-10 | Phase 6 | Complete |
-| CLI-11 | Phase 6 | Complete |
+| CLI-03 | Phase 6 | Pending |
+| CLI-04 | Phase 6 | Pending |
+| CLI-05 | Phase 6 | Pending |
+| CLI-06 | Phase 6 | Pending |
+| CLI-07 | Phase 6 | Pending |
+| CLI-08 | Phase 6 | Pending |
+| CLI-09 | Phase 6 | Pending |
+| CLI-10 | Phase 6 | Pending |
+| CLI-11 | Phase 6 | Pending |
 | CLI-12 | Phase 8 | Pending |
 | CLI-13 | Phase 8 | Pending |
 | CLI-14 | Phase 8 | Pending |
-| CLI-15 | Phase 6 | Complete |
-| CLI-16 | Phase 6 | Complete |
+| CLI-15 | Phase 6 | Pending |
+| CLI-16 | Phase 6 | Pending |
 | CLI-17 | Phase 8 | Pending |
 | CLI-18 | Phase 8 | Pending |
 | CLI-19 | Phase 8 | Pending |
@@ -196,43 +196,43 @@
 | CFG-07 | Phase 2 | Complete |
 | CFG-08 | Phase 2 | Complete |
 | CFG-09 | Phase 2 | Complete |
-| CFG-10 | Phase 7 | Pending |
-| CFG-11 | Phase 7 | Pending |
+| CFG-10 | Phase 7 | Complete |
+| CFG-11 | Phase 7 | Complete |
 | CFG-12 | Phase 7 | Pending |
 | CFG-13 | Phase 7 | Pending |
-| CFG-14 | Phase 7 | Pending |
-| CFG-15 | Phase 7 | Complete |
-| CFG-16 | Phase 7 | Complete |
-| CFG-17 | Phase 7 | Complete |
-| CFG-18 | Phase 7 | Complete |
+| CFG-14 | Phase 7 | Complete |
+| CFG-15 | Phase 7 | Pending |
+| CFG-16 | Phase 7 | Pending |
+| CFG-17 | Phase 7 | Pending |
+| CFG-18 | Phase 7 | Pending |
 | CFG-19 | Phase 2 | Complete |
-| CFG-20 | Phase 6 | Complete |
-| HAR-01 | Phase 5 | Complete |
-| HAR-02 | Phase 5 | Complete |
-| HAR-03 | Phase 5 | Complete |
-| HAR-04 | Phase 5 | Complete |
-| HAR-05 | Phase 5 | Complete |
-| HAR-06 | Phase 5 | Complete |
-| HAR-07 | Phase 5 | Complete |
-| HAR-08 | Phase 5 | Complete |
-| HAR-09 | Phase 5 | Complete |
-| HAR-10 | Phase 5 | Complete |
-| DOC-01 | Phase 4 | Complete |
-| DOC-02 | Phase 4 | Complete |
-| DOC-03 | Phase 4 | Complete |
-| DOC-04 | Phase 4 | Complete |
-| DOC-05 | Phase 4 | Complete |
-| DOC-06 | Phase 4 | Complete |
-| DOC-07 | Phase 4 | Complete |
-| DOC-08 | Phase 6 | Complete |
-| DOC-09 | Phase 6 | Complete |
-| DOC-10 | Phase 6 | Complete |
-| DOC-11 | Phase 6 | Complete |
-| DOC-12 | Phase 6 | Complete |
-| DOC-13 | Phase 4 | Complete |
-| DOC-14 | Phase 4 | Complete |
-| DOC-15 | Phase 4 | Complete |
-| DOC-16 | Phase 4 | Complete |
+| CFG-20 | Phase 6 | Pending |
+| HAR-01 | Phase 5 | Pending |
+| HAR-02 | Phase 5 | Pending |
+| HAR-03 | Phase 5 | Pending |
+| HAR-04 | Phase 5 | Pending |
+| HAR-05 | Phase 5 | Pending |
+| HAR-06 | Phase 5 | Pending |
+| HAR-07 | Phase 5 | Pending |
+| HAR-08 | Phase 5 | Pending |
+| HAR-09 | Phase 5 | Pending |
+| HAR-10 | Phase 5 | Pending |
+| DOC-01 | Phase 4 | Pending |
+| DOC-02 | Phase 4 | Pending |
+| DOC-03 | Phase 4 | Pending |
+| DOC-04 | Phase 4 | Pending |
+| DOC-05 | Phase 4 | Pending |
+| DOC-06 | Phase 4 | Pending |
+| DOC-07 | Phase 4 | Pending |
+| DOC-08 | Phase 6 | Pending |
+| DOC-09 | Phase 6 | Pending |
+| DOC-10 | Phase 6 | Pending |
+| DOC-11 | Phase 6 | Pending |
+| DOC-12 | Phase 6 | Pending |
+| DOC-13 | Phase 4 | Pending |
+| DOC-14 | Phase 4 | Pending |
+| DOC-15 | Phase 4 | Pending |
+| DOC-16 | Phase 4 | Pending |
 | NET-01 | Phase 10 | Pending |
 | NET-02 | Phase 10 | Pending |
 | NET-03 | Phase 10 | Pending |

@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Completed 07-02-PLAN.md
-last_updated: "2026-03-30T00:31:43.100Z"
+status: verifying
+stopped_at: Completed 07-01-PLAN.md
+last_updated: "2026-03-30T00:31:20.424Z"
 last_activity: 2026-03-30
 progress:
   total_phases: 10
-  completed_phases: 6
-  total_plans: 20
-  completed_plans: 18
+  completed_phases: 3
+  total_plans: 8
+  completed_plans: 9
   percent: 100
 ---
 
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-26)
 
 **Core value:** Run `zone launch` in any repo and get a sandboxed Docker workspace for your LLM coding agent, with zero manual Docker configuration.
-**Current focus:** Phase 07 — environment-auth-forwarding
+**Current focus:** Phase 2 - Config Foundation (Plan 03 complete — phase done)
 
 ## Current Position
 
-Phase: 07 (environment-auth-forwarding) — EXECUTING
-Plan: 2 of 3
-Status: Ready to execute
+Phase: 2 of 10 (Config Foundation) — complete
+Plan: 3 of 3 in current phase (complete)
+Status: Phase complete — ready for verification
 Last activity: 2026-03-30
 
 Progress: [██████████] 100%
@@ -59,16 +59,7 @@ Progress: [██████████] 100%
 | Phase 03-cache-state P01 | 8min | 3 tasks | 4 files |
 | Phase 03-cache-state P02 | 2min | 3 tasks | 4 files |
 | Phase 03-cache-state P03 | 3 | 1 tasks | 2 files |
-| Phase 04-template-system P01 | 10min | 2 tasks | 8 files |
-| Phase 04-template-system P02 | 3min | 3 tasks | 6 files |
-| Phase 05-harness-plugin-system P01 | 2min | 1 tasks | 4 files |
-| Phase 05-harness-plugin-system P02 | 3 | 1 tasks | 7 files |
-| Phase 05-harness-plugin-system P03 | 1min | 1 tasks | 2 files |
-| Phase 06 P01 | 5min | 2 tasks | 9 files |
-| Phase 06-docker-lifecycle-core P02 | 4min | 1 tasks | 4 files |
-| Phase 06-docker-lifecycle-core P03 | 2min | 1 tasks | 2 files |
-| Phase 06-docker-lifecycle-core P04 | 4min | 2 tasks | 12 files |
-| Phase 07-environment-auth-forwarding P02 | 2min | 2 tasks | 6 files |
+| Phase 07 P01 | 2min | 1 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -96,29 +87,8 @@ Recent decisions affecting current work:
 - [Phase 03-02]: Stale lock: pid<=0 treated as stale — prevents permanent block from corrupted PID file
 - [Phase 03-cache-state]: errors.Is in main.go traverses wrapped error chain — ErrLockContention wrapped via %w in Acquire() is correctly detected without custom Unwrap
 - [Phase 03-cache-state]: Exit code 5 check placed before generic os.Exit(1) in main.go — ordering is critical for correct mapping; full binary e2e deferred to Phase 6 when zone launch calls Lock.Acquire()
-- [Phase 04-template-system]: embed.FS replaced with three individual string vars — allows direct string access without io/fs overhead
-- [Phase 04-template-system]: ContainerName uses filepath.Abs so relative and absolute paths always produce same deterministic name
-- [Phase 04-template-system]: hash.go migrated simultaneously with templates to keep build passing with no intermediate broken state
-- [Phase 04-template-system]: templateFuncs() and injectGenerationComment() defined once in dockerfile.go, shared by entrypoint.go and shellrc.go
-- [Phase 04-template-system]: DetectGitIdentity() both-or-nothing: partial git config returns forward=false, empty strings for name/email
-- [Phase 05-harness-plugin-system]: NodeVersion/PythonVersion are NOT Harness interface methods — they come from MergedConfig.Harness per RESEARCH.md anti-patterns
-- [Phase 05-harness-plugin-system]: Get() wraps Validate() error with harness name prefix; placeholder stubs in harness.go for Plan 02 types keep plan compilable independently
-- [Phase 05-harness-plugin-system]: Cross-harness validation order: foreign-key errors before stub 'not implemented' error; aider owns python_version; custom checks skip_permissions before entrypoint_command
-- [Phase 05-harness-plugin-system]: NodeVersion/PythonVersion come from cfg.Harness (MergedConfig), not harness methods; HostUID/MacOSUsername set by Phase 6 caller (runtime values); configCopyCmd uses .host suffix for Phase 7 volume mount strategy
-- [Phase 06]: DockerClient interface wraps SDK for testability — newManagerWithClient() accepts mock in tests
-- [Phase 06]: go mod tidy removes deps without importers — write source files before tidying when adding new imports
-- [Phase 06]: errdefs.IsNotFound() used to swallow expected network/container not-found errors in removeNetwork
-- [Phase 06]: attachFn field on Manager enables test injection without build tags or interface wrapping
-- [Phase 06]: Lock NOT deferred — explicitly released before attachInteractive so zone join can connect concurrently
-- [Phase 06-03]: Stop retains image_id in cache — allows zone launch after stop to skip rebuild
-- [Phase 06-03]: Destroy calls Stop as first step — avoids code duplication for container/network cleanup
-- [Phase 06-03]: RemoveImage is standalone (not part of Stop) — maps to zone clean --image, orthogonal to stop lifecycle
-- [Phase 06-04]: QuickstartWriteZoneToml extracted as standalone — zero-config path (zone launch --harness) must not fail when Docker is not running yet
-- [Phase 06-04]: var version in cmd/root.go initialized to 'dev' — threaded from ldflags via SetVersion into NewManager for template rendering
-- [Phase 06-04]: Manager.Join validates container running state; Manager.Exec/Shell only check container ID exists — explicit failure on Exec is acceptable
-- [Phase 07-02]: proxyBuildArgs uses separate local variables for each *string to prevent pointer aliasing bug
-- [Phase 07-02]: runHooks takes io.Writer for stderr to enable test capture without os.Pipe() overhead
-- [Phase 07-02]: All docker helpers (ports/proxy/hooks) unexported — consistent with parseMemoryBytes pattern; consumed by Plan 03 wiring
+- [Phase 07]: filepath.Match chosen for glob semantics per spec section 4.6 — same semantics Docker uses internally
+- [Phase 07]: first-= split in ParseEnvFile preserves base64 and URL values that contain = signs
 
 ### Pending Todos
 
@@ -133,6 +103,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-30T00:31:43.096Z
-Stopped at: Completed 07-02-PLAN.md
+Last session: 2026-03-30T00:31:20.420Z
+Stopped at: Completed 07-01-PLAN.md
 Resume file: None
