@@ -1,11 +1,14 @@
 package cmd
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
+	"os/signal"
 	"sort"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/peasant-labs/zone/internal/cache"
@@ -19,6 +22,9 @@ var statusCmd = &cobra.Command{
 	Aliases: []string{"st"},
 	Short:   "Show container state, harness, uptime, and resources",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+		defer cancel()
+
 		cwd, err := os.Getwd()
 		if err != nil {
 			return fmt.Errorf("get working directory: %w", err)
@@ -35,7 +41,7 @@ var statusCmd = &cobra.Command{
 			return err
 		}
 
-		info, err := mgr.Status(cmd.Context())
+		info, err := mgr.Status(ctx)
 		if err != nil {
 			return err
 		}

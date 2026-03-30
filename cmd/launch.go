@@ -1,9 +1,12 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/peasant-labs/zone/internal/cache"
 	"github.com/peasant-labs/zone/internal/config"
@@ -16,6 +19,9 @@ var launchCmd = &cobra.Command{
 	Aliases: []string{"up"},
 	Short:   "Build (if needed) and attach to the container",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+		defer cancel()
+
 		cwd, err := os.Getwd()
 		if err != nil {
 			return fmt.Errorf("get working directory: %w", err)
@@ -76,7 +82,7 @@ var launchCmd = &cobra.Command{
 			HarnessArgs: args,
 		}
 
-		return mgr.Launch(cmd.Context(), opts)
+		return mgr.Launch(ctx, opts)
 	},
 }
 

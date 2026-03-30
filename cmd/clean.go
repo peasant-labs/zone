@@ -1,8 +1,11 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/peasant-labs/zone/internal/cache"
 	"github.com/peasant-labs/zone/internal/config"
@@ -34,6 +37,9 @@ var cleanCmd = &cobra.Command{
 
 		removeImage, _ := cmd.Flags().GetBool("image")
 		if removeImage {
+			ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+			defer cancel()
+
 			cfg, _, cfgErr := config.LoadMerged(cwd)
 			if cfgErr != nil {
 				return fmt.Errorf("load config for --image: %w", cfgErr)
@@ -44,7 +50,7 @@ var cleanCmd = &cobra.Command{
 			if mgrErr != nil {
 				return mgrErr
 			}
-			if err2 := mgr.RemoveImage(cmd.Context()); err2 != nil {
+			if err2 := mgr.RemoveImage(ctx); err2 != nil {
 				return fmt.Errorf("remove image: %w", err2)
 			}
 			fmt.Fprintln(cmd.OutOrStdout(), "Removed Docker image.")

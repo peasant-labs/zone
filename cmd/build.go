@@ -1,8 +1,11 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/peasant-labs/zone/internal/cache"
 	"github.com/peasant-labs/zone/internal/config"
@@ -14,6 +17,9 @@ var buildCmd = &cobra.Command{
 	Use:   "build",
 	Short: "Force-rebuild the Docker image without launching",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+		defer cancel()
+
 		cwd, err := os.Getwd()
 		if err != nil {
 			return fmt.Errorf("get working directory: %w", err)
@@ -31,7 +37,7 @@ var buildCmd = &cobra.Command{
 		}
 
 		noCache, _ := cmd.Flags().GetBool("no-cache")
-		if _, err := mgr.Build(cmd.Context(), noCache); err != nil {
+		if _, err := mgr.Build(ctx, noCache); err != nil {
 			return err
 		}
 

@@ -1,9 +1,12 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
+	"os/signal"
 	"path/filepath"
+	"syscall"
 
 	"github.com/peasant-labs/zone/internal/cache"
 	"github.com/peasant-labs/zone/internal/config"
@@ -50,6 +53,9 @@ var logsCmd = &cobra.Command{
 			return err
 		}
 
+		ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+		defer cancel()
+
 		follow, _ := cmd.Flags().GetBool("follow")
 		tail, _ := cmd.Flags().GetString("tail")
 		jsonMode, _ := cmd.Flags().GetBool("json")
@@ -58,7 +64,7 @@ var logsCmd = &cobra.Command{
 		}
 
 		opts := docker.LogsOpts{Follow: follow, Tail: tail, JSON: jsonMode}
-		return mgr.Logs(cmd.Context(), cmd.OutOrStdout(), cmd.ErrOrStderr(), opts)
+		return mgr.Logs(ctx, cmd.OutOrStdout(), cmd.ErrOrStderr(), opts)
 	},
 }
 

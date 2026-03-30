@@ -1,8 +1,11 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/peasant-labs/zone/internal/cache"
 	"github.com/peasant-labs/zone/internal/config"
@@ -15,6 +18,9 @@ var execCmd = &cobra.Command{
 	Short: "Run a one-off command inside the running container",
 	Args:  cobra.ArbitraryArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
+		ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+		defer cancel()
+
 		if len(args) == 0 {
 			return fmt.Errorf("no command specified. Usage: zone exec -- <command>")
 		}
@@ -36,7 +42,7 @@ var execCmd = &cobra.Command{
 		}
 
 		asRoot, _ := cmd.Flags().GetBool("root")
-		return mgr.Exec(cmd.Context(), args, asRoot)
+		return mgr.Exec(ctx, args, asRoot)
 	},
 }
 

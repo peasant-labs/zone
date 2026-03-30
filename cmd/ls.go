@@ -1,8 +1,12 @@
 package cmd
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"os"
+	"os/signal"
+	"syscall"
 	"text/tabwriter"
 	"time"
 
@@ -16,13 +20,16 @@ var lsCmd = &cobra.Command{
 	Aliases: []string{"list"},
 	Short:   "List all zone containers across all repos",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+		defer cancel()
+
 		cli, err := dockerclient.NewClientWithOpts(dockerclient.FromEnv, dockerclient.WithAPIVersionNegotiation())
 		if err != nil {
 			return fmt.Errorf("connect to Docker: %w", docker.ErrDockerNotRunning)
 		}
 		defer cli.Close()
 
-		containers, err := docker.ListContainers(cmd.Context(), cli)
+		containers, err := docker.ListContainers(ctx, cli)
 		if err != nil {
 			return err
 		}

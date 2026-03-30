@@ -2,9 +2,12 @@ package cmd
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 
 	"github.com/peasant-labs/zone/internal/cache"
 	"github.com/peasant-labs/zone/internal/config"
@@ -16,6 +19,9 @@ var destroyCmd = &cobra.Command{
 	Use:   "destroy",
 	Short: "Fully tear down container, image, network, and cache",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+		defer cancel()
+
 		cwd, err := os.Getwd()
 		if err != nil {
 			return fmt.Errorf("get working directory: %w", err)
@@ -44,7 +50,7 @@ var destroyCmd = &cobra.Command{
 			}
 		}
 
-		return mgr.Destroy(cmd.Context())
+		return mgr.Destroy(ctx)
 	},
 }
 

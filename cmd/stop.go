@@ -1,8 +1,11 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/peasant-labs/zone/internal/cache"
 	"github.com/peasant-labs/zone/internal/config"
@@ -15,6 +18,9 @@ var stopCmd = &cobra.Command{
 	Aliases: []string{"down"},
 	Short:   "Stop and remove the container and network",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+		defer cancel()
+
 		cwd, err := os.Getwd()
 		if err != nil {
 			return fmt.Errorf("get working directory: %w", err)
@@ -31,7 +37,7 @@ var stopCmd = &cobra.Command{
 			return err
 		}
 
-		return mgr.Stop(cmd.Context())
+		return mgr.Stop(ctx)
 	},
 }
 

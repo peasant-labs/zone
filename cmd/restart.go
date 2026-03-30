@@ -1,8 +1,11 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/peasant-labs/zone/internal/cache"
 	"github.com/peasant-labs/zone/internal/config"
@@ -14,6 +17,9 @@ var restartCmd = &cobra.Command{
 	Use:   "restart",
 	Short: "Stop and relaunch the container",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+		defer cancel()
+
 		cwd, err := os.Getwd()
 		if err != nil {
 			return fmt.Errorf("get working directory: %w", err)
@@ -31,7 +37,7 @@ var restartCmd = &cobra.Command{
 		}
 
 		// Stop the running container first.
-		if err := mgr.Stop(cmd.Context()); err != nil {
+		if err := mgr.Stop(ctx); err != nil {
 			return err
 		}
 
@@ -41,7 +47,7 @@ var restartCmd = &cobra.Command{
 			Rebuild: rebuild,
 		}
 
-		return mgr.Launch(cmd.Context(), opts)
+		return mgr.Launch(ctx, opts)
 	},
 }
 
