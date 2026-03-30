@@ -78,4 +78,4 @@ Run `zone launch` in any repo and get a sandboxed Docker workspace for your LLM 
 | Typed HarnessConfig struct (not map[string]interface{}) | Type safety, per-harness validation of allowed fields | — Pending |
 
 ---
-*Last updated: 2026-03-26 after initialization*
+*Last updated: 2026-03-30 after Phase 7 completion — env forwarding, SSH agent, auth config, proxy, ports, hooks all wired*
