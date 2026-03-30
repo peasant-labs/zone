@@ -129,7 +129,11 @@ Plans:
   3. SSH agent forwarding mounts the host socket into the container; keys are never written to disk
   4. Auth config files are available read-write inside the container while the host copy is unchanged
   5. `pre_build` and `post_stop` hook commands execute at the correct lifecycle points
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 07-01-PLAN.md — Env collection, glob matching, .env parsing, required env validation (env.go)
+- [ ] 07-02-PLAN.md — Port binding parsing, proxy resolution, hook execution (ports.go, proxy.go, hooks.go)
+- [ ] 07-03-PLAN.md — Wire all helpers into Manager: buildMounts, createContainer, Launch, Stop, buildImage
 
 ### Phase 8: CLI Commands & DX
 **Goal**: All 21 CLI commands work end-to-end with correct exit codes, signal handling, JSON output, and inline help
@@ -182,7 +186,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 4. Template System | 2/2 | Complete   | 2026-03-29 |
 | 5. Harness Plugin System | 3/3 | Complete   | 2026-03-29 |
 | 6. Docker Lifecycle Core | 4/4 | Complete   | 2026-03-29 |
-| 7. Environment, Auth & Forwarding | 0/TBD | Not started | - |
+| 7. Environment, Auth & Forwarding | 0/3 | Not started | - |
 | 8. CLI Commands & DX | 0/TBD | Not started | - |
 | 9. TUI Layer | 0/TBD | Not started | - |
 | 10. Network Sandboxing | 0/TBD | Not started | - |
