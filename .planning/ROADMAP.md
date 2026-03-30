@@ -132,7 +132,7 @@ Plans:
 **Plans**: 3 plans
 Plans:
 - [ ] 07-01-PLAN.md — Env collection, glob matching, .env parsing, required env validation (env.go)
-- [ ] 07-02-PLAN.md — Port binding parsing, proxy resolution, hook execution (ports.go, proxy.go, hooks.go)
+- [x] 07-02-PLAN.md — Port binding parsing, proxy resolution, hook execution (ports.go, proxy.go, hooks.go)
 - [ ] 07-03-PLAN.md — Wire all helpers into Manager: buildMounts, createContainer, Launch, Stop, buildImage
 
 ### Phase 8: CLI Commands & DX
@@ -186,7 +186,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 4. Template System | 2/2 | Complete   | 2026-03-29 |
 | 5. Harness Plugin System | 3/3 | Complete   | 2026-03-29 |
 | 6. Docker Lifecycle Core | 4/4 | Complete   | 2026-03-29 |
-| 7. Environment, Auth & Forwarding | 0/3 | Not started | - |
+| 7. Environment, Auth & Forwarding | 1/3 | In Progress|  |
 | 8. CLI Commands & DX | 0/TBD | Not started | - |
 | 9. TUI Layer | 0/TBD | Not started | - |
 | 10. Network Sandboxing | 0/TBD | Not started | - |
