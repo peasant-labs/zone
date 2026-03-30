@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: verifying
-stopped_at: Completed 07-01-PLAN.md
-last_updated: "2026-03-30T00:31:20.424Z"
+stopped_at: Completed 07-03-PLAN.md
+last_updated: "2026-03-30T00:40:00.045Z"
 last_activity: 2026-03-30
 progress:
   total_phases: 10
-  completed_phases: 3
-  total_plans: 8
-  completed_plans: 9
+  completed_phases: 7
+  total_plans: 20
+  completed_plans: 20
   percent: 100
 ---
 
@@ -60,6 +60,7 @@ Progress: [██████████] 100%
 | Phase 03-cache-state P02 | 2min | 3 tasks | 4 files |
 | Phase 03-cache-state P03 | 3 | 1 tasks | 2 files |
 | Phase 07 P01 | 2min | 1 tasks | 2 files |
+| Phase 07 P03 | 5 min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -89,6 +90,8 @@ Recent decisions affecting current work:
 - [Phase 03-cache-state]: Exit code 5 check placed before generic os.Exit(1) in main.go — ordering is critical for correct mapping; full binary e2e deferred to Phase 6 when zone launch calls Lock.Acquire()
 - [Phase 07]: filepath.Match chosen for glob semantics per spec section 4.6 — same semantics Docker uses internally
 - [Phase 07]: first-= split in ParseEnvFile preserves base64 and URL values that contain = signs
+- [Phase 07]: MountHomeConfig default=true (nil pointer means enabled): auth config mounts active unless explicitly disabled
+- [Phase 07]: SSH agent macOS skips with warning; Linux skips if SSH_AUTH_SOCK unset or not a socket
 
 ### Pending Todos
 
@@ -103,6 +106,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-30T00:31:20.420Z
-Stopped at: Completed 07-01-PLAN.md
+Last session: 2026-03-30T00:40:00.041Z
+Stopped at: Completed 07-03-PLAN.md
 Resume file: None

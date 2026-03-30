@@ -42,13 +42,13 @@
 - [x] **CFG-09**: Config schema version field (`version = 1`) is validated on parse
 - [x] **CFG-10**: Environment variable forwarding supports glob patterns (e.g., `AWS_*`)
 - [x] **CFG-11**: Pre-launch validation checks required env vars are set before Docker build starts
-- [ ] **CFG-12**: SSH agent forwarding mounts socket when `forward_ssh_agent = true`
-- [ ] **CFG-13**: Auth config uses copy-on-start strategy (writable copy in container, host preserved)
+- [x] **CFG-12**: SSH agent forwarding mounts socket when `forward_ssh_agent = true`
+- [x] **CFG-13**: Auth config uses copy-on-start strategy (writable copy in container, host preserved)
 - [x] **CFG-14**: `.env` file support via `auth.env_file` config key
-- [ ] **CFG-15**: Proxy support (http_proxy, https_proxy, no_proxy) with host auto-detection
-- [ ] **CFG-16**: Port forwarding from config (`ports = ["3000:3000"]`)
-- [ ] **CFG-17**: Resource limits from config (memory, cpus, pids_limit)
-- [ ] **CFG-18**: Hooks support (pre_build, post_stop shell commands)
+- [x] **CFG-15**: Proxy support (http_proxy, https_proxy, no_proxy) with host auto-detection
+- [x] **CFG-16**: Port forwarding from config (`ports = ["3000:3000"]`)
+- [x] **CFG-17**: Resource limits from config (memory, cpus, pids_limit)
+- [x] **CFG-18**: Hooks support (pre_build, post_stop shell commands)
 - [x] **CFG-19**: Extra mounts default to read-only, require explicit `:rw` for write
 - [ ] **CFG-20**: Persistent home volume via named Docker volume (survives container recreation)
 
@@ -198,13 +198,13 @@
 | CFG-09 | Phase 2 | Complete |
 | CFG-10 | Phase 7 | Complete |
 | CFG-11 | Phase 7 | Complete |
-| CFG-12 | Phase 7 | Pending |
-| CFG-13 | Phase 7 | Pending |
+| CFG-12 | Phase 7 | Complete |
+| CFG-13 | Phase 7 | Complete |
 | CFG-14 | Phase 7 | Complete |
-| CFG-15 | Phase 7 | Pending |
-| CFG-16 | Phase 7 | Pending |
-| CFG-17 | Phase 7 | Pending |
-| CFG-18 | Phase 7 | Pending |
+| CFG-15 | Phase 7 | Complete |
+| CFG-16 | Phase 7 | Complete |
+| CFG-17 | Phase 7 | Complete |
+| CFG-18 | Phase 7 | Complete |
 | CFG-19 | Phase 2 | Complete |
 | CFG-20 | Phase 6 | Pending |
 | HAR-01 | Phase 5 | Pending |

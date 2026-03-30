@@ -18,7 +18,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 4: Template System** - Dockerfile/entrypoint/RC templates, go:embed, deterministic naming (completed 2026-03-29)
 - [x] **Phase 5: Harness Plugin System** - Interface, registry, claude-code impl, custom harness, stubs (completed 2026-03-29)
 - [x] **Phase 6: Docker Lifecycle Core** - Idempotent build/launch/stop/destroy, security hardening (completed 2026-03-29)
-- [ ] **Phase 7: Environment, Auth & Forwarding** - Env vars, SSH agent, auth copy, proxy, ports, hooks
+- [x] **Phase 7: Environment, Auth & Forwarding** - Env vars, SSH agent, auth copy, proxy, ports, hooks (completed 2026-03-30)
 - [ ] **Phase 8: CLI Commands & DX** - All commands wired, exit codes, signals, JSON output, aliases
 - [ ] **Phase 9: TUI Layer** - BubbleTea init wizard, build progress, status view, log viewer
 - [ ] **Phase 10: Network Sandboxing** - Host-side iptables whitelist/blocklist, hostname glob, cleanup
@@ -131,9 +131,9 @@ Plans:
   5. `pre_build` and `post_stop` hook commands execute at the correct lifecycle points
 **Plans**: 3 plans
 Plans:
-- [ ] 07-01-PLAN.md — Env collection, glob matching, .env parsing, required env validation (env.go)
+- [x] 07-01-PLAN.md — Env collection, glob matching, .env parsing, required env validation (env.go)
 - [x] 07-02-PLAN.md — Port binding parsing, proxy resolution, hook execution (ports.go, proxy.go, hooks.go)
-- [ ] 07-03-PLAN.md — Wire all helpers into Manager: buildMounts, createContainer, Launch, Stop, buildImage
+- [x] 07-03-PLAN.md — Wire all helpers into Manager: buildMounts, createContainer, Launch, Stop, buildImage
 
 ### Phase 8: CLI Commands & DX
 **Goal**: All 21 CLI commands work end-to-end with correct exit codes, signal handling, JSON output, and inline help
@@ -186,7 +186,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 4. Template System | 2/2 | Complete   | 2026-03-29 |
 | 5. Harness Plugin System | 3/3 | Complete   | 2026-03-29 |
 | 6. Docker Lifecycle Core | 4/4 | Complete   | 2026-03-29 |
-| 7. Environment, Auth & Forwarding | 1/3 | In Progress|  |
+| 7. Environment, Auth & Forwarding | 3/3 | Complete   | 2026-03-30 |
 | 8. CLI Commands & DX | 0/TBD | Not started | - |
 | 9. TUI Layer | 0/TBD | Not started | - |
 | 10. Network Sandboxing | 0/TBD | Not started | - |
