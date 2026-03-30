@@ -40,11 +40,11 @@
 - [x] **CFG-07**: `zone config` shows merged result with source annotations (global vs repo)
 - [x] **CFG-08**: `zone config --json` outputs machine-readable merged config
 - [x] **CFG-09**: Config schema version field (`version = 1`) is validated on parse
-- [ ] **CFG-10**: Environment variable forwarding supports glob patterns (e.g., `AWS_*`)
-- [ ] **CFG-11**: Pre-launch validation checks required env vars are set before Docker build starts
+- [x] **CFG-10**: Environment variable forwarding supports glob patterns (e.g., `AWS_*`)
+- [x] **CFG-11**: Pre-launch validation checks required env vars are set before Docker build starts
 - [ ] **CFG-12**: SSH agent forwarding mounts socket when `forward_ssh_agent = true`
 - [ ] **CFG-13**: Auth config uses copy-on-start strategy (writable copy in container, host preserved)
-- [ ] **CFG-14**: `.env` file support via `auth.env_file` config key
+- [x] **CFG-14**: `.env` file support via `auth.env_file` config key
 - [ ] **CFG-15**: Proxy support (http_proxy, https_proxy, no_proxy) with host auto-detection
 - [ ] **CFG-16**: Port forwarding from config (`ports = ["3000:3000"]`)
 - [ ] **CFG-17**: Resource limits from config (memory, cpus, pids_limit)
@@ -196,11 +196,11 @@
 | CFG-07 | Phase 2 | Complete |
 | CFG-08 | Phase 2 | Complete |
 | CFG-09 | Phase 2 | Complete |
-| CFG-10 | Phase 7 | Pending |
-| CFG-11 | Phase 7 | Pending |
+| CFG-10 | Phase 7 | Complete |
+| CFG-11 | Phase 7 | Complete |
 | CFG-12 | Phase 7 | Pending |
 | CFG-13 | Phase 7 | Pending |
-| CFG-14 | Phase 7 | Pending |
+| CFG-14 | Phase 7 | Complete |
 | CFG-15 | Phase 7 | Pending |
 | CFG-16 | Phase 7 | Pending |
 | CFG-17 | Phase 7 | Pending |
