@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Completed 08-cli-commands-dx-02-PLAN.md
-last_updated: "2026-03-30T22:47:09.347Z"
+status: verifying
+stopped_at: Completed 08-cli-commands-dx-03-PLAN.md
+last_updated: "2026-03-30T23:02:13.907Z"
 last_activity: 2026-03-30
 progress:
   total_phases: 10
-  completed_phases: 7
+  completed_phases: 8
   total_plans: 23
-  completed_plans: 22
+  completed_plans: 23
   percent: 100
 ---
 
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-03-26)
 
 Phase: 08 (cli-commands-dx) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-03-30
 
 Progress: [██████████] 100%
@@ -63,6 +63,7 @@ Progress: [██████████] 100%
 | Phase 07 P03 | 5 min | 2 tasks | 4 files |
 | Phase 08-cli-commands-dx P01 | 6m | 2 tasks | 9 files |
 | Phase 08-cli-commands-dx P02 | 3m | 2 tasks | 16 files |
+| Phase 08-cli-commands-dx P03 | 13min | 2 tasks | 17 files |
 
 ## Accumulated Context
 
@@ -98,6 +99,8 @@ Recent decisions affecting current work:
 - [Phase 08]: Kept logs --build path Docker-independent by reading .zone/logs/last_build.log directly.
 - [Phase 08]: Centralized exit-code/remediation mapping in cmd/errors.go with main.go as single os.Exit site.
 - [Phase 08]: Applied signal.NotifyContext(SIGNINT,SIGTERM) to all Docker-calling commands and propagated ctx to manager/docker APIs.
+- [Phase 08-cli-commands-dx]: Implemented launch --port/-P by extending LaunchOpts and merging ad-hoc bindings into workspace ports before container creation.
+- [Phase 08-cli-commands-dx]: Added binary-level DX integration tests to lock aliases, help examples, flags, and JSON/scriptability behavior.
 
 ### Pending Todos
 
@@ -112,6 +115,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-30T22:47:09.340Z
-Stopped at: Completed 08-cli-commands-dx-02-PLAN.md
+Last session: 2026-03-30T23:02:13.903Z
+Stopped at: Completed 08-cli-commands-dx-03-PLAN.md
 Resume file: None

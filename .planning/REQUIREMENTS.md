@@ -24,10 +24,10 @@
 - [ ] **CLI-15**: User can run `zone clean` to remove .zone/ cache and optionally Docker image
 - [ ] **CLI-16**: User can run `zone destroy` to fully tear down container, image, network, and cache
 - [x] **CLI-17**: User can run `zone status` to see container state, harness, uptime, ports, resources
-- [ ] **CLI-18**: User can run `zone config` to show effective merged config with source annotations
-- [ ] **CLI-19**: User can run `zone validate` to check zone.toml validity without launching
-- [ ] **CLI-20**: User can use global flags `--verbose`, `--debug`, `--quiet`, `--plain` on any command
-- [ ] **CLI-21**: User can forward arguments to the harness via `--` separator (e.g., `zone launch -- -p "fix"`)
+- [x] **CLI-18**: User can run `zone config` to show effective merged config with source annotations
+- [x] **CLI-19**: User can run `zone validate` to check zone.toml validity without launching
+- [x] **CLI-20**: User can use global flags `--verbose`, `--debug`, `--quiet`, `--plain` on any command
+- [x] **CLI-21**: User can forward arguments to the harness via `--` separator (e.g., `zone launch -- -p "fix"`)
 
 ### Configuration
 
@@ -122,13 +122,13 @@
 
 - [x] **DX-01**: Structured exit codes: 0 success, 1 generic, 2 config, 3 docker, 4 network, 5 cache, 6 no container
 - [x] **DX-02**: All error messages include remediation hints
-- [ ] **DX-03**: `--json` flag on status, ls, config, logs for machine-readable output
+- [x] **DX-03**: `--json` flag on status, ls, config, logs for machine-readable output
 - [x] **DX-04**: Signal handling: Ctrl+C sends SIGINT to harness, container stays alive
 - [x] **DX-05**: Context propagation: all Docker SDK calls take context for graceful cancellation
 - [x] **DX-06**: Harness process exit causes container stop; zone launch returns exit code 0
 - [x] **DX-07**: `zone stop` cleanup: stop container, remove container, remove network, clear IDs from cache
-- [ ] **DX-08**: Command aliases: launch/up, stop/down, ls/list, logs/log, status/st
-- [ ] **DX-09**: Help text with 2-4 usage examples per command
+- [x] **DX-08**: Command aliases: launch/up, stop/down, ls/list, logs/log, status/st
+- [x] **DX-09**: Help text with 2-4 usage examples per command
 - [x] **DX-10**: GoReleaser configuration for binary distribution
 
 ## v2 Requirements
@@ -183,10 +183,10 @@
 | CLI-15 | Phase 6 | Pending |
 | CLI-16 | Phase 6 | Pending |
 | CLI-17 | Phase 8 | Complete |
-| CLI-18 | Phase 8 | Pending |
-| CLI-19 | Phase 8 | Pending |
-| CLI-20 | Phase 8 | Pending |
-| CLI-21 | Phase 8 | Pending |
+| CLI-18 | Phase 8 | Complete |
+| CLI-19 | Phase 8 | Complete |
+| CLI-20 | Phase 8 | Complete |
+| CLI-21 | Phase 8 | Complete |
 | CFG-01 | Phase 2 | Complete |
 | CFG-02 | Phase 2 | Complete |
 | CFG-03 | Phase 2 | Complete |
@@ -260,13 +260,13 @@
 | CAC-06 | Phase 3 | Complete |
 | DX-01 | Phase 8 | Complete |
 | DX-02 | Phase 8 | Complete |
-| DX-03 | Phase 8 | Pending |
+| DX-03 | Phase 8 | Complete |
 | DX-04 | Phase 8 | Complete |
 | DX-05 | Phase 8 | Complete |
 | DX-06 | Phase 8 | Complete |
 | DX-07 | Phase 8 | Complete |
-| DX-08 | Phase 8 | Pending |
-| DX-09 | Phase 8 | Pending |
+| DX-08 | Phase 8 | Complete |
+| DX-09 | Phase 8 | Complete |
 | DX-10 | Phase 1 | Complete |
 
 **Coverage:**
