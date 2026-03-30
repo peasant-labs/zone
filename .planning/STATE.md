@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: verifying
-stopped_at: Phase 8 context gathered
-last_updated: "2026-03-30T17:09:18.256Z"
+status: executing
+stopped_at: Completed 08-cli-commands-dx-01-PLAN.md
+last_updated: "2026-03-30T22:41:16.574Z"
 last_activity: 2026-03-30
 progress:
   total_phases: 10
   completed_phases: 7
-  total_plans: 20
-  completed_plans: 20
+  total_plans: 23
+  completed_plans: 21
   percent: 100
 ---
 
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-26)
 
 **Core value:** Run `zone launch` in any repo and get a sandboxed Docker workspace for your LLM coding agent, with zero manual Docker configuration.
-**Current focus:** Phase 2 - Config Foundation (Plan 03 complete — phase done)
+**Current focus:** Phase 08 — cli-commands-dx
 
 ## Current Position
 
-Phase: 8 of 10 (cli commands & dx)
-Plan: Not started
-Status: Phase complete — ready for verification
+Phase: 08 (cli-commands-dx) — EXECUTING
+Plan: 2 of 3
+Status: Ready to execute
 Last activity: 2026-03-30
 
 Progress: [██████████] 100%
@@ -61,6 +61,7 @@ Progress: [██████████] 100%
 | Phase 03-cache-state P03 | 3 | 1 tasks | 2 files |
 | Phase 07 P01 | 2min | 1 tasks | 2 files |
 | Phase 07 P03 | 5 min | 2 tasks | 4 files |
+| Phase 08-cli-commands-dx P01 | 6m | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -92,6 +93,8 @@ Recent decisions affecting current work:
 - [Phase 07]: first-= split in ParseEnvFile preserves base64 and URL values that contain = signs
 - [Phase 07]: MountHomeConfig default=true (nil pointer means enabled): auth config mounts active unless explicitly disabled
 - [Phase 07]: SSH agent macOS skips with warning; Linux skips if SSH_AUTH_SOCK unset or not a socket
+- [Phase 08]: Implemented zone ls via docker.ListContainers helper so listing works without zone.toml.
+- [Phase 08]: Kept logs --build path Docker-independent by reading .zone/logs/last_build.log directly.
 
 ### Pending Todos
 
@@ -106,6 +109,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-30T17:09:18.251Z
-Stopped at: Phase 8 context gathered
-Resume file: .planning/phases/08-cli-commands-dx/08-CONTEXT.md
+Last session: 2026-03-30T22:41:16.571Z
+Stopped at: Completed 08-cli-commands-dx-01-PLAN.md
+Resume file: None

@@ -7,8 +7,8 @@
 
 ### CLI Commands
 
-- [ ] **CLI-01**: User can run `zone init` to scaffold a `zone.toml` in the current directory with interactive harness selection
-- [ ] **CLI-02**: User can run `zone init --harness <name>` to scaffold non-interactively
+- [x] **CLI-01**: User can run `zone init` to scaffold a `zone.toml` in the current directory with interactive harness selection
+- [x] **CLI-02**: User can run `zone init --harness <name>` to scaffold non-interactively
 - [ ] **CLI-03**: User can run `zone launch` to build (if needed) and attach to a container for this repo
 - [ ] **CLI-04**: User can run `zone launch --headless -p "task"` to run a detached agent with a prompt
 - [ ] **CLI-05**: User can run `zone launch --harness <name>` with no zone.toml for zero-config quickstart
@@ -18,12 +18,12 @@
 - [ ] **CLI-09**: User can run `zone build` to force-rebuild the Docker image without launching
 - [ ] **CLI-10**: User can run `zone stop` to stop and remove the container and network, retaining cache
 - [ ] **CLI-11**: User can run `zone restart` to stop and relaunch the container
-- [ ] **CLI-12**: User can run `zone ls` to list all zone containers across all repos
-- [ ] **CLI-13**: User can run `zone logs` to view harness output, with `--follow` for live tailing
-- [ ] **CLI-14**: User can run `zone logs --build` to view the last Docker build log
+- [x] **CLI-12**: User can run `zone ls` to list all zone containers across all repos
+- [x] **CLI-13**: User can run `zone logs` to view harness output, with `--follow` for live tailing
+- [x] **CLI-14**: User can run `zone logs --build` to view the last Docker build log
 - [ ] **CLI-15**: User can run `zone clean` to remove .zone/ cache and optionally Docker image
 - [ ] **CLI-16**: User can run `zone destroy` to fully tear down container, image, network, and cache
-- [ ] **CLI-17**: User can run `zone status` to see container state, harness, uptime, ports, resources
+- [x] **CLI-17**: User can run `zone status` to see container state, harness, uptime, ports, resources
 - [ ] **CLI-18**: User can run `zone config` to show effective merged config with source annotations
 - [ ] **CLI-19**: User can run `zone validate` to check zone.toml validity without launching
 - [ ] **CLI-20**: User can use global flags `--verbose`, `--debug`, `--quiet`, `--plain` on any command
@@ -166,8 +166,8 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CLI-01 | Phase 8 | Pending |
-| CLI-02 | Phase 8 | Pending |
+| CLI-01 | Phase 8 | Complete |
+| CLI-02 | Phase 8 | Complete |
 | CLI-03 | Phase 6 | Pending |
 | CLI-04 | Phase 6 | Pending |
 | CLI-05 | Phase 6 | Pending |
@@ -177,12 +177,12 @@
 | CLI-09 | Phase 6 | Pending |
 | CLI-10 | Phase 6 | Pending |
 | CLI-11 | Phase 6 | Pending |
-| CLI-12 | Phase 8 | Pending |
-| CLI-13 | Phase 8 | Pending |
-| CLI-14 | Phase 8 | Pending |
+| CLI-12 | Phase 8 | Complete |
+| CLI-13 | Phase 8 | Complete |
+| CLI-14 | Phase 8 | Complete |
 | CLI-15 | Phase 6 | Pending |
 | CLI-16 | Phase 6 | Pending |
-| CLI-17 | Phase 8 | Pending |
+| CLI-17 | Phase 8 | Complete |
 | CLI-18 | Phase 8 | Pending |
 | CLI-19 | Phase 8 | Pending |
 | CLI-20 | Phase 8 | Pending |
