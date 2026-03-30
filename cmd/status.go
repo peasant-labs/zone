@@ -21,6 +21,13 @@ var statusCmd = &cobra.Command{
 	Use:     "status",
 	Aliases: []string{"st"},
 	Short:   "Show container state, harness, uptime, and resources",
+	Long: `Show detailed container state, harness, uptime, ports, and resources.
+
+Displays a summary of the zone container for this repo. Use --json
+for machine-readable output suitable for scripting.`,
+	Example: `  zone status
+  zone status --json
+  zone st`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 		defer cancel()

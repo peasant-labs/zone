@@ -16,6 +16,12 @@ import (
 var cleanCmd = &cobra.Command{
 	Use:   "clean",
 	Short: "Remove the .zone/ cache directory",
+	Long: `Remove the .zone/ cache directory for this repo.
+
+Removes cached config hashes, container IDs, and build logs.
+Use --image to also remove the Docker image.`,
+	Example: `  zone clean
+  zone clean --image`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cwd, err := os.Getwd()
 		if err != nil {

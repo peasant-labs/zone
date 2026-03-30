@@ -13,6 +13,14 @@ import (
 var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Scaffold a zone.toml in the current directory",
+	Long: `Scaffold a zone.toml configuration file in the current directory.
+
+Detects existing harness indicators (.claude/, CLAUDE.md, .aider*)
+and suggests the appropriate harness. Use --set to customize the
+generated config without editing the file afterward.`,
+	Example: `  zone init --harness claude-code
+  zone init --harness aider --set resources.memory=8g
+  zone init --harness claude-code --set resources.cpus=4`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		harnessName, _ := cmd.Flags().GetString("harness")
 		if harnessName == "" {

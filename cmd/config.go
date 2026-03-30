@@ -20,6 +20,14 @@ var (
 var configCmd = &cobra.Command{
 	Use:   "config",
 	Short: "Show effective merged configuration with source annotations",
+	Long: `Show the effective merged configuration with source annotations.
+
+Displays the result of merging global (~/.config/zone/config.toml) and
+repo (zone.toml) configs. Each value is annotated with its source.
+Use --json for machine-readable output.`,
+	Example: `  zone config
+  zone config --json
+  zone config --global`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if configGlobal {
 			return showGlobalConfig(cmd, configJSON)

@@ -19,6 +19,14 @@ var lsCmd = &cobra.Command{
 	Use:     "ls",
 	Aliases: []string{"list"},
 	Short:   "List all zone containers across all repos",
+	Long: `List all zone-managed containers across all repositories.
+
+Queries Docker for containers with the zone management label.
+Does not require a zone.toml — works from any directory.`,
+	Example: `  zone ls
+  zone ls --running
+  zone ls --json
+  zone ls --quiet`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 		defer cancel()

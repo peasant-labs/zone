@@ -16,6 +16,12 @@ import (
 var restartCmd = &cobra.Command{
 	Use:   "restart",
 	Short: "Stop and relaunch the container",
+	Long: `Stop the running container and relaunch it.
+
+Equivalent to 'zone stop' followed by 'zone launch'. Use --rebuild
+to force a fresh image build during restart.`,
+	Example: `  zone restart
+  zone restart --rebuild`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 		defer cancel()

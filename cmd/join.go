@@ -16,6 +16,11 @@ import (
 var joinCmd = &cobra.Command{
 	Use:   "join",
 	Short: "Attach a new shell to a running container",
+	Long: `Attach a new terminal to a running zone container.
+
+Opens an interactive shell session inside the container without
+restarting the harness. Useful for running parallel tasks.`,
+	Example: `  zone join`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 		defer cancel()

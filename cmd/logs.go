@@ -18,6 +18,14 @@ var logsCmd = &cobra.Command{
 	Use:     "logs",
 	Aliases: []string{"log"},
 	Short:   "View harness output",
+	Long: `View container logs or the last Docker build log.
+
+Shows harness output from the running container. Use --follow for
+live tailing, --tail to limit output, or --build for the build log.`,
+	Example: `  zone logs
+  zone logs --follow
+  zone logs --tail 50
+  zone logs --build`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		buildMode, _ := cmd.Flags().GetBool("build")
 		if buildMode {

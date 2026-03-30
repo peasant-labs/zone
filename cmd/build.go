@@ -16,6 +16,12 @@ import (
 var buildCmd = &cobra.Command{
 	Use:   "build",
 	Short: "Force-rebuild the Docker image without launching",
+	Long: `Force-rebuild the Docker image without launching the container.
+
+Useful after changing the Dockerfile template, packages, or base
+image. Use --no-cache to build from scratch.`,
+	Example: `  zone build
+  zone build --no-cache`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 		defer cancel()

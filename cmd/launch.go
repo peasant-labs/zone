@@ -18,6 +18,16 @@ var launchCmd = &cobra.Command{
 	Use:     "launch",
 	Aliases: []string{"up"},
 	Short:   "Build (if needed) and attach to the container",
+	Long: `Build the Docker image (if needed) and attach to the container.
+
+If no zone.toml exists and --harness is provided, creates a minimal
+config automatically (zero-config quickstart). Reattaches to a running
+container instead of creating a duplicate.`,
+	Example: `  zone launch
+  zone launch --harness claude-code
+  zone launch --headless -p "fix the tests"
+  zone launch -P 3000:3000 -P 8080:8080
+  zone launch -- --model sonnet`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 		defer cancel()
@@ -73,6 +83,7 @@ var launchCmd = &cobra.Command{
 		prompt, _ := cmd.Flags().GetString("prompt")
 		rebuild, _ := cmd.Flags().GetBool("rebuild")
 		noCache, _ := cmd.Flags().GetBool("no-cache")
+		ports, _ := cmd.Flags().GetStringArray("port")
 
 		opts := docker.LaunchOpts{
 			Headless:    headless,
@@ -80,6 +91,7 @@ var launchCmd = &cobra.Command{
 			Rebuild:     rebuild,
 			NoCache:     noCache,
 			HarnessArgs: args,
+			Ports:       ports,
 		}
 
 		return mgr.Launch(ctx, opts)
@@ -92,6 +104,7 @@ func init() {
 	launchCmd.Flags().StringP("prompt", "p", "", "Prompt to pass to the harness")
 	launchCmd.Flags().Bool("rebuild", false, "Force rebuild before launch")
 	launchCmd.Flags().Bool("no-cache", false, "Build without Docker cache")
+	launchCmd.Flags().StringArrayP("port", "P", nil, "Ad-hoc port binding (e.g., -P 3000:3000), repeatable")
 	launchCmd.Flags().Bool("root", false, "Reserved for future use")
 	launchCmd.Flags().BoolP("yes", "y", false, "Skip confirmation prompts (reserved)")
 }

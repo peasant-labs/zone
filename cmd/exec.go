@@ -16,7 +16,14 @@ import (
 var execCmd = &cobra.Command{
 	Use:   "exec -- <command>",
 	Short: "Run a one-off command inside the running container",
-	Args:  cobra.ArbitraryArgs,
+	Long: `Run a one-off command inside the running container.
+
+Arguments after -- are passed directly to the container shell.
+Use --root to run as root (e.g., for package installation).`,
+	Example: `  zone exec -- ls -la
+  zone exec -- npm test
+  zone exec --root -- apt-get update`,
+	Args: cobra.ArbitraryArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 		defer cancel()

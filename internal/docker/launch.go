@@ -34,6 +34,9 @@ type LaunchOpts struct {
 
 	// HarnessArgs are appended verbatim to the harness entrypoint command.
 	HarnessArgs []string
+
+	// Ports are ad-hoc host:container port bindings from --port/-P.
+	Ports []string
 }
 
 // Launch implements the full zone launch state machine:
@@ -45,6 +48,10 @@ type LaunchOpts struct {
 //  5. Release lock (before TTY attach so zone join can connect concurrently)
 //  6. Headless: print container ID and return; Interactive: exec -it attach
 func (m *Manager) Launch(ctx context.Context, opts LaunchOpts) error {
+	if len(opts.Ports) > 0 {
+		m.config.Workspace.Ports = append(m.config.Workspace.Ports, opts.Ports...)
+	}
+
 	// Ensure cache directory exists before acquiring lock.
 	if err := m.cache.EnsureDir(); err != nil {
 		return err

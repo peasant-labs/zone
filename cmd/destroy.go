@@ -18,6 +18,12 @@ import (
 var destroyCmd = &cobra.Command{
 	Use:   "destroy",
 	Short: "Fully tear down container, image, network, and cache",
+	Long: `Fully tear down the container, image, network, volume, and cache.
+
+Removes all zone artifacts for this repo. Requires confirmation
+unless --yes is provided. Use 'zone stop' for a lighter cleanup.`,
+	Example: `  zone destroy
+  zone destroy --yes`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 		defer cancel()

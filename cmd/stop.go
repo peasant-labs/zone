@@ -17,6 +17,12 @@ var stopCmd = &cobra.Command{
 	Use:     "stop",
 	Aliases: []string{"down"},
 	Short:   "Stop and remove the container and network",
+	Long: `Stop and remove the container and network, retaining the cached image.
+
+The Docker image and .zone/ cache are preserved for fast relaunch.
+Use 'zone destroy' to remove everything including the image.`,
+	Example: `  zone stop
+  zone down`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 		defer cancel()

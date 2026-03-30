@@ -14,6 +14,12 @@ var allowDangerousMount bool
 var validateCmd = &cobra.Command{
 	Use:   "validate",
 	Short: "Check zone.toml validity without starting anything",
+	Long: `Check zone.toml validity without starting anything.
+
+Validates config syntax, unknown keys, dangerous mounts, and schema
+version. Returns exit code 2 on config errors, 0 on success.`,
+	Example: `  zone validate
+  zone validate --allow-dangerous-mount`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		// 1. Check for zone.toml.
 		repoPath := "zone.toml"

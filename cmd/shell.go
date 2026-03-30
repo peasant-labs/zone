@@ -16,6 +16,11 @@ import (
 var shellCmd = &cobra.Command{
 	Use:   "shell",
 	Short: "Open an interactive shell in the container",
+	Long: `Open an interactive shell in the container.
+
+Starts a shell session even if no harness is running. Useful for
+debugging or manual inspection of the container environment.`,
+	Example: `  zone shell`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 		defer cancel()
