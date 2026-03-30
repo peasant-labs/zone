@@ -503,10 +503,16 @@ type LogsOpts struct {
 // List queries Docker for all containers with the com.zone.managed=true label.
 // Does not require a zone.toml — works globally across all repos.
 func (m *Manager) List(ctx context.Context) ([]ContainerInfo, error) {
+	return ListContainers(ctx, m.client)
+}
+
+// ListContainers queries Docker for all zone-managed containers without requiring
+// a Manager instance. Used by `zone ls` which operates without a zone.toml.
+func ListContainers(ctx context.Context, client DockerClient) ([]ContainerInfo, error) {
 	f := filters.NewArgs()
 	f.Add("label", "com.zone.managed=true")
 
-	containers, err := m.client.ContainerList(ctx, container.ListOptions{
+	containers, err := client.ContainerList(ctx, container.ListOptions{
 		All:     true,
 		Filters: f,
 	})
