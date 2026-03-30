@@ -146,7 +146,11 @@ Plans:
   4. Every error message includes a remediation hint; exit codes map to error categories 0-6
   5. `zone validate` catches config errors without touching Docker or starting any containers
   6. Command aliases (launch/up, stop/down, ls/list, logs/log, status/st) all work identically
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 08-01-PLAN.md — Implement init, ls, logs, status commands + Manager.List/Logs/Status + DockerClient interface extension
+- [ ] 08-02-PLAN.md — Exit code taxonomy (0-6), cmd/errors.go remediation hints, signal.NotifyContext on all Docker commands
+- [ ] 08-03-PLAN.md — Help text with examples for all 15 commands, --port/-P flag, JSON output, aliases verification, DX integration tests
 
 ### Phase 9: TUI Layer
 **Goal**: Interactive users get a polished BubbleTea interface; non-TTY users and CI environments get clean plain-text output automatically
@@ -187,6 +191,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 5. Harness Plugin System | 3/3 | Complete   | 2026-03-29 |
 | 6. Docker Lifecycle Core | 4/4 | Complete   | 2026-03-29 |
 | 7. Environment, Auth & Forwarding | 3/3 | Complete   | 2026-03-30 |
-| 8. CLI Commands & DX | 0/TBD | Not started | - |
+| 8. CLI Commands & DX | 0/3 | Not started | - |
 | 9. TUI Layer | 0/TBD | Not started | - |
 | 10. Network Sandboxing | 0/TBD | Not started | - |
