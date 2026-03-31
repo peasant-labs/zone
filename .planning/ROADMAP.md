@@ -146,11 +146,12 @@ Plans:
   4. Every error message includes a remediation hint; exit codes map to error categories 0-6
   5. `zone validate` catches config errors without touching Docker or starting any containers
   6. Command aliases (launch/up, stop/down, ls/list, logs/log, status/st) all work identically
-**Plans**: 3 plans
+**Plans**: 4 plans
 Plans:
 - [x] 08-01-PLAN.md — Implement init, ls, logs, status commands + Manager.List/Logs/Status + DockerClient interface extension
 - [x] 08-02-PLAN.md — Exit code taxonomy (0-6), cmd/errors.go remediation hints, signal.NotifyContext on all Docker commands
 - [x] 08-03-PLAN.md — Help text with examples for all 15 commands, --port/-P flag, JSON output, aliases verification, DX integration tests
+- [ ] 08-04-PLAN.md — Gap closure: codify deferred init boundary (D-02), fix fallback remediation hints, normalize help example counts, and run human DX runtime verification
 
 ### Phase 9: TUI Layer
 **Goal**: Interactive users get a polished BubbleTea interface; non-TTY users and CI environments get clean plain-text output automatically
