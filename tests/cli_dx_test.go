@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -66,9 +67,18 @@ func TestHelpExamples(t *testing.T) {
 		t.Run(cmdName, func(t *testing.T) {
 			out, err := exec.Command(binary, cmdName, "--help").CombinedOutput()
 			require.NoError(t, err, "%s --help failed: %s", cmdName, string(out))
-			assert.Contains(t, string(out), "Examples:", "%s --help missing Examples section", cmdName)
+			help := string(out)
+			assert.Contains(t, help, "Examples:", "%s --help missing Examples section", cmdName)
+			count := countUsageExamples(help)
+			assert.GreaterOrEqual(t, count, 2, "%s --help must include at least 2 usage examples", cmdName)
+			assert.LessOrEqual(t, count, 4, "%s --help must include at most 4 usage examples", cmdName)
 		})
 	}
+}
+
+func countUsageExamples(help string) int {
+	re := regexp.MustCompile(`(?m)^\s{2,}zone\s+`)
+	return len(re.FindAllString(help, -1))
 }
 
 // TestGlobalFlags verifies --verbose, --debug, --quiet, --plain are available (CLI-20).
@@ -207,4 +217,44 @@ func TestRemediationHintOnStderr(t *testing.T) {
 	_ = cmd.Run()
 
 	assert.True(t, stderr.Len() > 0, "expected error output on stderr for missing zone.toml")
+	assert.Contains(t, stderr.String(), "zone init", "expected remediation hint to include next-step command")
+}
+
+// TestFallbackRemediationHintOnStderr verifies generic errors include actionable remediation (DX-02).
+func TestFallbackRemediationHintOnStderr(t *testing.T) {
+	binary := getZoneBinary(t)
+	dir := t.TempDir()
+
+	cmd := exec.Command(binary, "exec")
+	cmd.Dir = dir
+	cmd.Env = append(os.Environ(), "XDG_CONFIG_HOME="+dir+"/no-xdg")
+
+	var stderr strings.Builder
+	cmd.Stderr = &stderr
+	err := cmd.Run()
+	require.Error(t, err)
+
+	assert.Contains(t, stderr.String(), "no command specified")
+	assert.Contains(t, stderr.String(), "zone --help")
+}
+
+// TestUnknownKeysRemediationHintOnStderr verifies unknown-key config failures include remediation (DX-02).
+func TestUnknownKeysRemediationHintOnStderr(t *testing.T) {
+	binary := getZoneBinary(t)
+	dir := t.TempDir()
+
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "zone.toml"), []byte("version = 1\nharness = \"claude-code\"\nbad_field = true\n"), 0644))
+
+	cmd := exec.Command(binary, "launch")
+	cmd.Dir = dir
+	cmd.Env = append(os.Environ(), "XDG_CONFIG_HOME="+dir+"/no-xdg")
+
+	var stderr strings.Builder
+	cmd.Stderr = &stderr
+	err := cmd.Run()
+	require.Error(t, err)
+
+	assert.Equal(t, 2, cmd.ProcessState.ExitCode(), "unknown-key config errors should map to exit code 2")
+	assert.Contains(t, stderr.String(), "unknown key")
+	assert.Contains(t, stderr.String(), "zone validate")
 }
