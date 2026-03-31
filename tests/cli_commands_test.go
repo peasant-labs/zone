@@ -4,6 +4,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -48,9 +49,17 @@ func TestInitNoHarness(t *testing.T) {
 	cmd := exec.Command(binary, "init")
 	cmd.Dir = dir
 	cmd.Env = append(os.Environ(), "XDG_CONFIG_HOME="+dir+"/no-xdg")
-	out, err := cmd.CombinedOutput()
+
+	var stdout strings.Builder
+	var stderr strings.Builder
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	err := cmd.Run()
 	require.Error(t, err)
-	assert.Contains(t, string(out), "interactive mode requires a terminal")
+	assert.Contains(t, stderr.String(), "interactive mode requires a terminal")
+	assert.Contains(t, stderr.String(), "Phase 9")
+	assert.Contains(t, stderr.String(), "--harness <name>")
+	assert.Equal(t, "", stdout.String())
 }
 
 func TestInitSetFlag(t *testing.T) {
