@@ -55,10 +55,14 @@ func mapError(err error) (string, int) {
 	default:
 		var uke *config.UnknownKeysError
 		if errors.As(err, &uke) {
-			return "Error: " + err.Error(), 2
+			return "Error: " + err.Error() + "\n\n" +
+				"  Run `zone validate` to review config issues and suggestions,\n" +
+				"  then fix unknown keys in zone.toml before retrying.", 2
 		}
 
-		return "Error: " + err.Error(), 1
+		return "Error: " + err.Error() + "\n\n" +
+			"  Re-run with `--debug` for more details and inspect command usage with `zone --help`.\n" +
+			"  If this persists, run `zone validate` to confirm configuration health.", 1
 	}
 }
 

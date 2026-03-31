@@ -24,7 +24,6 @@ If no zone.toml exists and --harness is provided, creates a minimal
 config automatically (zero-config quickstart). Reattaches to a running
 container instead of creating a duplicate.`,
 	Example: `  zone launch
-  zone launch --harness claude-code
   zone launch --headless -p "fix the tests"
   zone launch -P 3000:3000 -P 8080:8080
   zone launch -- --model sonnet`,

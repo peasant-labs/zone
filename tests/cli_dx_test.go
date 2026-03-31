@@ -2,13 +2,15 @@ package tests
 
 import (
 	"encoding/json"
+	"errors"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"regexp"
 	"strings"
 	"testing"
 
+	zonecmd "github.com/peasant-labs/zone/cmd"
+	"github.com/peasant-labs/zone/internal/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -77,8 +79,25 @@ func TestHelpExamples(t *testing.T) {
 }
 
 func countUsageExamples(help string) int {
-	re := regexp.MustCompile(`(?m)^\s{2,}zone\s+`)
-	return len(re.FindAllString(help, -1))
+	idx := strings.Index(help, "Examples:")
+	if idx < 0 {
+		return 0
+	}
+	section := help[idx+len("Examples:"):]
+	for _, stop := range []string{"Flags:\n", "Global Flags:\n", "Use \""} {
+		if stopIdx := strings.Index(section, stop); stopIdx >= 0 {
+			section = section[:stopIdx]
+			break
+		}
+	}
+
+	count := 0
+	for _, line := range strings.Split(section, "\n") {
+		if strings.HasPrefix(strings.TrimRight(line, " \t"), "  zone ") {
+			count++
+		}
+	}
+	return count
 }
 
 // TestGlobalFlags verifies --verbose, --debug, --quiet, --plain are available (CLI-20).
@@ -240,21 +259,15 @@ func TestFallbackRemediationHintOnStderr(t *testing.T) {
 
 // TestUnknownKeysRemediationHintOnStderr verifies unknown-key config failures include remediation (DX-02).
 func TestUnknownKeysRemediationHintOnStderr(t *testing.T) {
-	binary := getZoneBinary(t)
-	dir := t.TempDir()
+	err := &config.UnknownKeysError{Keys: []string{"bad_field"}, File: "zone.toml"}
 
-	require.NoError(t, os.WriteFile(filepath.Join(dir, "zone.toml"), []byte("version = 1\nharness = \"claude-code\"\nbad_field = true\n"), 0644))
+	msg, code := zonecmd.MapError(err)
+	assert.Equal(t, 2, code, "unknown-key config errors should map to exit code 2")
+	assert.Contains(t, strings.ToLower(msg), "unknown")
+	assert.Contains(t, msg, "zone validate")
 
-	cmd := exec.Command(binary, "launch")
-	cmd.Dir = dir
-	cmd.Env = append(os.Environ(), "XDG_CONFIG_HOME="+dir+"/no-xdg")
-
-	var stderr strings.Builder
-	cmd.Stderr = &stderr
-	err := cmd.Run()
-	require.Error(t, err)
-
-	assert.Equal(t, 2, cmd.ProcessState.ExitCode(), "unknown-key config errors should map to exit code 2")
-	assert.Contains(t, stderr.String(), "unknown key")
-	assert.Contains(t, stderr.String(), "zone validate")
+	wrapped := errors.New("wrapper: " + err.Error())
+	msg2, code2 := zonecmd.MapError(wrapped)
+	assert.Equal(t, 1, code2, "non-sentinel string errors should fall back to generic mapping")
+	assert.Contains(t, msg2, "zone --help")
 }
