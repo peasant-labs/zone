@@ -24,7 +24,7 @@ generated config without editing the file afterward.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		harnessName, _ := cmd.Flags().GetString("harness")
 		if harnessName == "" {
-			return fmt.Errorf("interactive mode requires a terminal. Use `--harness <name>` for non-interactive init")
+			return fmt.Errorf("interactive mode requires a terminal. Use `--harness <name>` for non-interactive init. Interactive harness selection is deferred to Phase 9")
 		}
 
 		cwd, err := os.Getwd()
