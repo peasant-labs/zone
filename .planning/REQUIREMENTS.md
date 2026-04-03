@@ -86,16 +86,16 @@
 
 ### Network Sandboxing
 
-- [ ] **NET-01**: Whitelist mode: deny all outbound, allow specific hostnames via iptables
-- [ ] **NET-02**: Blocklist mode: allow all outbound, deny specific hostnames
-- [ ] **NET-03**: Mode "none" applies no network restrictions (default)
+- [x] **NET-01**: Whitelist mode: deny all outbound, allow specific hostnames via iptables
+- [x] **NET-02**: Blocklist mode: allow all outbound, deny specific hostnames
+- [x] **NET-03**: Mode "none" applies no network restrictions (default)
 - [x] **NET-04**: Each container gets its own Docker bridge network
-- [ ] **NET-05**: Host-side iptables rules tagged with comments for identification and cleanup
-- [ ] **NET-06**: Rules refreshed periodically (every 5 min) by re-resolving hostnames
+- [x] **NET-05**: Host-side iptables rules tagged with comments for identification and cleanup
+- [x] **NET-06**: Rules refreshed periodically (every 5 min) by re-resolving hostnames
 - [x] **NET-07**: IPv6 disabled on container network to prevent bypass
-- [ ] **NET-08**: Deny list takes priority over allow list in whitelist mode
+- [x] **NET-08**: Deny list takes priority over allow list in whitelist mode
 - [x] **NET-09**: macOS warns that network filtering is unavailable and falls back to mode=none
-- [ ] **NET-10**: Firewall rules cached in .zone/firewall.rules for inspectability
+- [x] **NET-10**: Firewall rules cached in .zone/firewall.rules for inspectability
 - [x] **NET-11**: `sudo iptables` used only for firewall commands; fallback to none if sudo unavailable
 - [x] **NET-12**: Hostname glob matching for network rules (e.g., `*.anthropic.com`)
 
@@ -233,16 +233,16 @@
 | DOC-14 | Phase 4 | Pending |
 | DOC-15 | Phase 4 | Pending |
 | DOC-16 | Phase 4 | Pending |
-| NET-01 | Phase 10 | Pending |
-| NET-02 | Phase 10 | Pending |
-| NET-03 | Phase 10 | Pending |
+| NET-01 | Phase 10 | Complete |
+| NET-02 | Phase 10 | Complete |
+| NET-03 | Phase 10 | Complete |
 | NET-04 | Phase 10 | Complete |
-| NET-05 | Phase 10 | Pending |
-| NET-06 | Phase 10 | Pending |
+| NET-05 | Phase 10 | Complete |
+| NET-06 | Phase 10 | Complete |
 | NET-07 | Phase 10 | Complete |
-| NET-08 | Phase 10 | Pending |
+| NET-08 | Phase 10 | Complete |
 | NET-09 | Phase 10 | Complete |
-| NET-10 | Phase 10 | Pending |
+| NET-10 | Phase 10 | Complete |
 | NET-11 | Phase 10 | Complete |
 | NET-12 | Phase 10 | Complete |
 | TUI-01 | Phase 9 | Complete |

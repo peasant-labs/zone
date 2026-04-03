@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 status: executing
 stopped_at: Completed 10-network-sandboxing-01-PLAN.md
-last_updated: "2026-04-03T04:24:14.446Z"
+last_updated: "2026-04-03T04:32:30.232Z"
 last_activity: 2026-04-03
 progress:
   total_phases: 10
   completed_phases: 8
   total_plans: 30
-  completed_plans: 27
+  completed_plans: 28
   percent: 100
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-03-26)
 ## Current Position
 
 Phase: 10 (network-sandboxing) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-04-03
 
@@ -105,6 +105,7 @@ Recent decisions affecting current work:
 - [Phase 10-network-sandboxing]: Platform detection runs once in Manager construction and stores a Platform snapshot for later firewall lifecycle decisions.
 - [Phase 10-network-sandboxing]: Hostname rules accept only literals and simple single-label globs, while filepath.Match handles actual wildcard matching.
 - [Phase 10-network-sandboxing]: Firewall setup, sudo, and iptables failures all map to exit code 4 with actionable remediation hints.
+- [Phase 10-network-sandboxing]: Firewall refresh uses an injectable resolver plus a small refreshOnce helper to keep the 5-minute loop testable without sleeping in tests.
 
 ### Pending Todos
 
