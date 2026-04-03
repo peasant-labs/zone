@@ -20,6 +20,7 @@ import (
 	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/network"
+	"github.com/docker/docker/api/types/system"
 	"github.com/docker/docker/api/types/volume"
 	"github.com/docker/docker/errdefs"
 	"github.com/docker/go-connections/nat"
@@ -29,6 +30,7 @@ import (
 
 	"github.com/peasant-labs/zone/internal/cache"
 	"github.com/peasant-labs/zone/internal/config"
+	networkpkg "github.com/peasant-labs/zone/internal/network"
 )
 
 // mockClient is a configurable mock implementation of DockerClient.
@@ -36,11 +38,17 @@ import (
 type mockClient struct {
 	pingErr             error
 	pingResp            types.Ping
+	infoResp            system.Info
+	infoErr             error
 	networkCreateID     string
+	networkInspectResp  network.Inspect
+	networkInspectErr   error
 	networkCreateErr    error
 	networkRemoveErr    error
 	containerCreateResp container.CreateResponse
 	containerCreateErr  error
+	containerListResp   []container.Summary
+	containerListErr    error
 	imageBuildResp      types.ImageBuildResponse
 	imageBuildErr       error
 	imageInspectResp    types.ImageInspect
@@ -74,6 +82,10 @@ func (m *mockClient) Ping(ctx context.Context) (types.Ping, error) {
 	return m.pingResp, m.pingErr
 }
 
+func (m *mockClient) Info(ctx context.Context) (system.Info, error) {
+	return m.infoResp, m.infoErr
+}
+
 func (m *mockClient) ImageBuild(ctx context.Context, buildContext io.Reader, options types.ImageBuildOptions) (types.ImageBuildResponse, error) {
 	m.lastBuildOptions = options
 	return m.imageBuildResp, m.imageBuildErr
@@ -95,7 +107,7 @@ func (m *mockClient) ContainerCreate(ctx context.Context, cfg *container.Config,
 }
 
 func (m *mockClient) ContainerList(ctx context.Context, options container.ListOptions) ([]container.Summary, error) {
-	return nil, nil
+	return m.containerListResp, m.containerListErr
 }
 
 func (m *mockClient) ContainerLogs(ctx context.Context, ctr string, options container.LogsOptions) (io.ReadCloser, error) {
@@ -129,6 +141,10 @@ func (m *mockClient) ContainerUnpause(ctx context.Context, containerID string) e
 
 func (m *mockClient) NetworkCreate(ctx context.Context, name string, options network.CreateOptions) (network.CreateResponse, error) {
 	return network.CreateResponse{ID: m.networkCreateID}, m.networkCreateErr
+}
+
+func (m *mockClient) NetworkInspect(ctx context.Context, networkID string, options network.InspectOptions) (network.Inspect, error) {
+	return m.networkInspectResp, m.networkInspectErr
 }
 
 func (m *mockClient) NetworkRemove(ctx context.Context, networkID string) error {
@@ -442,6 +458,42 @@ func TestRemoveNetwork_OtherError(t *testing.T) {
 	err := m.removeNetwork(context.Background())
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "remove network")
+}
+
+func TestStaleRuleCleanupOnLaunch(t *testing.T) {
+	mc := &mockClient{
+		containerListResp: []container.Summary{
+			{Names: []string{"/zone-project-abc1234567890def"}},
+		},
+	}
+	m := newManagerWithClient(mc, newDefaultConfig(), cache.New(t.TempDir()), t.TempDir(), "test-version")
+
+	runningHashes, err := m.listRunningZoneHashes(context.Background())
+	require.NoError(t, err)
+	assert.Equal(t, map[string]bool{"abc1234567890def": true}, runningHashes)
+
+	var calls [][]string
+	execFn := func(ctx context.Context, args ...string) ([]byte, error) {
+		copied := append([]string(nil), args...)
+		calls = append(calls, copied)
+		if len(args) == 1 && args[0] == "-S" {
+			return []byte("-A FORWARD -i br-x -d 1.2.3.4 -j ACCEPT -m comment --comment zone-abc1234567890def\n" +
+				"-A FORWARD -i br-x -d 5.6.7.8 -j DROP -m comment --comment zone-deadbeefdeadbeef\n"), nil
+		}
+		return nil, nil
+	}
+
+	err = networkpkg.CleanStaleRules(context.Background(), execFn, runningHashes)
+	require.NoError(t, err)
+
+	var deleteCalls [][]string
+	for _, call := range calls {
+		if len(call) > 0 && call[0] == "-D" {
+			deleteCalls = append(deleteCalls, call)
+		}
+	}
+	require.Len(t, deleteCalls, 1)
+	assert.Equal(t, []string{"-D", "FORWARD", "-i", "br-x", "-d", "5.6.7.8", "-j", "DROP", "-m", "comment", "--comment", "zone-deadbeefdeadbeef"}, deleteCalls[0])
 }
 
 // --- Launch State Machine Tests ---
@@ -1133,6 +1185,9 @@ func makeLaunchMockWithAPIKey(t *testing.T) (*mockClient, *Manager) {
 // when ANTHROPIC_API_KEY is not set (claude-code harness).
 func TestLaunch_RequiredEnvValidation(t *testing.T) {
 	_, m := makeLaunchMockWithAPIKey(t)
+	m.config.Zone.Harness = "custom"
+	m.config.Harness.EntrypointCommand = "custom-agent"
+	m.config.Harness.RequiredEnv = []string{"ANTHROPIC_API_KEY"}
 
 	// Ensure the required key is completely absent (not just empty)
 	t.Setenv("ANTHROPIC_API_KEY", "")
@@ -1151,6 +1206,9 @@ func TestLaunch_RequiredEnvValidation(t *testing.T) {
 // when ANTHROPIC_API_KEY is set.
 func TestLaunch_RequiredEnvValidation_Satisfied(t *testing.T) {
 	_, m := makeLaunchMockWithAPIKey(t)
+	m.config.Zone.Harness = "custom"
+	m.config.Harness.EntrypointCommand = "custom-agent"
+	m.config.Harness.RequiredEnv = []string{"ANTHROPIC_API_KEY"}
 
 	t.Setenv("ANTHROPIC_API_KEY", "test-key-satisfied")
 

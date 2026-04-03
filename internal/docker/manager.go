@@ -21,7 +21,7 @@ import (
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/mount"
-	"github.com/docker/docker/api/types/network"
+	dockernetwork "github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/api/types/strslice"
 	dockerclient "github.com/docker/docker/client"
 	"github.com/docker/docker/errdefs"
@@ -30,20 +30,30 @@ import (
 	"github.com/peasant-labs/zone/internal/cache"
 	"github.com/peasant-labs/zone/internal/config"
 	"github.com/peasant-labs/zone/internal/harness"
+	"github.com/peasant-labs/zone/internal/network"
 )
 
 // Manager orchestrates Docker container lifecycle operations for a single repository.
 // It holds a Docker client (interface for testability), config, cache, and metadata.
 type Manager struct {
-	client  DockerClient
-	config  *config.MergedConfig
-	cache   *cache.Cache
-	repoDir string // absolute path to repo root
-	version string // zone binary version for template rendering
+	client   DockerClient
+	config   *config.MergedConfig
+	cache    *cache.Cache
+	repoDir  string // absolute path to repo root
+	version  string // zone binary version for template rendering
+	platform Platform
 
 	// attachFn is the function used to attach an interactive TTY session.
 	// Defaults to attachInteractive; overridden in tests with a no-op.
 	attachFn func(containerID string, cmd []string, asRoot bool) error
+
+	// firewall manages iptables rules for the current container.
+	// nil when mode=none or platform doesn't support iptables.
+	firewall *network.Firewall
+
+	// firewallCancel stops the background refresh goroutine.
+	// nil when no refresh is running.
+	firewallCancel context.CancelFunc
 }
 
 // NewManager creates a Manager, verifying Docker daemon connectivity via Ping().
@@ -57,8 +67,9 @@ func NewManager(cfg *config.MergedConfig, c *cache.Cache, repoDir, version strin
 		cli.Close()
 		return nil, fmt.Errorf("%w: %v", ErrDockerNotRunning, err)
 	}
+	platform := DetectPlatform(context.Background(), cli)
 	absDir, _ := filepath.Abs(repoDir)
-	m := &Manager{client: cli, config: cfg, cache: c, repoDir: absDir, version: version}
+	m := &Manager{client: cli, config: cfg, cache: c, repoDir: absDir, version: version, platform: platform}
 	m.attachFn = m.attachInteractive
 	return m, nil
 }
@@ -67,7 +78,7 @@ func NewManager(cfg *config.MergedConfig, c *cache.Cache, repoDir, version strin
 // Used in unit tests to inject a mock client without requiring a live Docker daemon.
 func newManagerWithClient(cli DockerClient, cfg *config.MergedConfig, c *cache.Cache, repoDir, version string) *Manager {
 	absDir, _ := filepath.Abs(repoDir)
-	m := &Manager{client: cli, config: cfg, cache: c, repoDir: absDir, version: version}
+	m := &Manager{client: cli, config: cfg, cache: c, repoDir: absDir, version: version, platform: DetectPlatform(context.Background(), cli)}
 	m.attachFn = m.attachInteractive
 	return m
 }
@@ -179,8 +190,8 @@ func (m *Manager) createContainer(ctx context.Context, imageID string) (string, 
 		PortBindings: portBindings,
 	}
 
-	netCfg := &network.NetworkingConfig{
-		EndpointsConfig: map[string]*network.EndpointSettings{
+	netCfg := &dockernetwork.NetworkingConfig{
+		EndpointsConfig: map[string]*dockernetwork.EndpointSettings{
 			networkName: {},
 		},
 	}
@@ -344,6 +355,21 @@ func (m *Manager) Stop(ctx context.Context) error {
 		if !errdefs.IsNotFound(err) {
 			return fmt.Errorf("remove container: %w", err)
 		}
+	}
+
+	// Cancel the refresh goroutine before removing rules (D-25)
+	if m.firewallCancel != nil {
+		m.firewallCancel()
+		m.firewallCancel = nil
+	}
+
+	// Remove iptables rules before removing the network (D-38)
+	if m.firewall != nil {
+		if err := m.firewall.Remove(ctx); err != nil {
+			fmt.Fprintf(os.Stderr, "Warning: failed to remove firewall rules: %v\n", err)
+		}
+		_ = m.firewall.RemoveRulesCache()
+		m.firewall = nil
 	}
 
 	// Remove the dedicated bridge network.

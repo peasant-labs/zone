@@ -11,6 +11,7 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/network"
+	"github.com/docker/docker/api/types/system"
 	"github.com/docker/docker/api/types/volume"
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 )
@@ -19,6 +20,7 @@ import (
 // All methods accept a context for graceful cancellation.
 type DockerClient interface {
 	Ping(ctx context.Context) (types.Ping, error)
+	Info(ctx context.Context) (system.Info, error)
 	ImageBuild(ctx context.Context, buildContext io.Reader, options types.ImageBuildOptions) (types.ImageBuildResponse, error)
 	ImageInspectWithRaw(ctx context.Context, imageID string) (types.ImageInspect, []byte, error)
 	ImageRemove(ctx context.Context, imageID string, options image.RemoveOptions) ([]image.DeleteResponse, error)
@@ -31,6 +33,7 @@ type DockerClient interface {
 	ContainerInspect(ctx context.Context, containerID string) (container.InspectResponse, error)
 	ContainerUnpause(ctx context.Context, containerID string) error
 	NetworkCreate(ctx context.Context, name string, options network.CreateOptions) (network.CreateResponse, error)
+	NetworkInspect(ctx context.Context, networkID string, options network.InspectOptions) (network.Inspect, error)
 	NetworkRemove(ctx context.Context, networkID string) error
 	VolumeCreate(ctx context.Context, options volume.CreateOptions) (volume.Volume, error)
 	VolumeRemove(ctx context.Context, volumeID string, force bool) error

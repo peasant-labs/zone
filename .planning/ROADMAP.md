@@ -163,7 +163,11 @@ Plans:
   3. Running `zone init` without `--harness` in a non-TTY environment produces a helpful error message
   4. `zone launch --plain` bypasses TUI even when running in a TTY
   5. Terminal state is fully restored after any TUI session, including forced exits and panics
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [x] 09-01-PLAN.md — Install BubbleTea v2 deps, TTY helper, Init Wizard model, wire cmd/init.go
+- [ ] 09-02-PLAN.md — Build Progress model with channel adapter, Status View model, wire cmd/launch.go and cmd/status.go
+- [x] 09-03-PLAN.md — Log Viewer model with follow mode and search, wire cmd/logs.go
 
 ### Phase 10: Network Sandboxing
 **Goal**: Containers running on Linux are network-isolated via host-side iptables rules that survive process crashes and clean up after themselves
@@ -176,7 +180,13 @@ Plans:
   4. iptables rules are tagged with the container ID and cleaned up when the container stops or `zone clean` runs
   5. Hostname glob patterns (e.g., `*.anthropic.com`) match correctly in both whitelist and blocklist rules
   6. Stale rules from a previous crashed Zone process are detected and removed on the next startup
-**Plans**: TBD
+**Plans**: 5 plans
+Plans:
+- [x] 10-01-PLAN.md — Platform detection, DockerClient.Info(), hostname glob matcher, sentinel errors, tests
+- [x] 10-02-PLAN.md — Firewall rule generation (BuildRuleSet), Firewall Apply/Remove, iptables execution, rules cache, tests
+- [x] 10-03-PLAN.md — Manager integration: setupFirewall in Launch, cleanup in Stop/Destroy, refresh goroutine, stale rule cleanup, proxy auto-allowlisting
+- [ ] 10-04-PLAN.md — Gap closure: durable firewall cleanup across fresh stop/destroy/clean processes (NET-05)
+- [ ] 10-05-PLAN.md — Gap closure: hostname glob enforcement end-to-end with warning-based degradation (NET-12)
 
 ## Progress
 
@@ -193,5 +203,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 6. Docker Lifecycle Core | 4/4 | Complete   | 2026-03-29 |
 | 7. Environment, Auth & Forwarding | 3/3 | Complete   | 2026-03-30 |
 | 8. CLI Commands & DX | 0/3 | Not started | - |
-| 9. TUI Layer | 0/TBD | Not started | - |
-| 10. Network Sandboxing | 0/TBD | Not started | - |
+| 9. TUI Layer | 2/3 | In Progress|  |
+| 10. Network Sandboxing | 3/5 | Gap Closure | |

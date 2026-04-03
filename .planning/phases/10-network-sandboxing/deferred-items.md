@@ -1,0 +1,1 @@
+- 2026-04-03 — `go test ./... -count=1` fails in unrelated dirty-worktree test `tests/cli_dx_test.go:TestUnknownKeysRemediationHintOnStderr` (expected exit code 2, got 1). Not modified by plan 10-01, so deferred per scope boundary.

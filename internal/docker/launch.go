@@ -8,13 +8,16 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/errdefs"
 
 	"github.com/peasant-labs/zone/internal/cache"
 	"github.com/peasant-labs/zone/internal/harness"
+	"github.com/peasant-labs/zone/internal/network"
 )
 
 // LaunchOpts configures the behaviour of Manager.Launch.
@@ -37,6 +40,43 @@ type LaunchOpts struct {
 
 	// Ports are ad-hoc host:container port bindings from --port/-P.
 	Ports []string
+}
+
+// NeedsBuild returns true if a Docker image build is required.
+// It checks force rebuild, hash mismatch, and image existence.
+// This is the same logic as buildIfNeeded but returns bool instead of building.
+func (m *Manager) NeedsBuild(ctx context.Context, forceRebuild bool) bool {
+	if forceRebuild {
+		return true
+	}
+	current, err := cache.ComputeHash(m.config, m.version)
+	if err != nil {
+		return true
+	}
+	cached, err := m.cache.ConfigHash()
+	if err != nil {
+		return true
+	}
+	if current != cached {
+		return true
+	}
+	imageID, err := m.cache.ImageID()
+	if err != nil || imageID == "" {
+		return true
+	}
+	if _, _, err := m.client.ImageInspectWithRaw(ctx, imageID); err != nil {
+		return true
+	}
+	return false
+}
+
+// Restart stops the current container and relaunches it with default options.
+// Used by zone status TUI hotkey 'r'.
+func (m *Manager) Restart(ctx context.Context) error {
+	if err := m.Stop(ctx); err != nil {
+		return err
+	}
+	return m.Launch(ctx, LaunchOpts{})
 }
 
 // Launch implements the full zone launch state machine:
@@ -159,6 +199,13 @@ func (m *Manager) Launch(ctx context.Context, opts LaunchOpts) error {
 	// Step 4: create and start container.
 	newContainerID, err := m.createAndStart(ctx)
 	if err != nil {
+		lock.Release()
+		return err
+	}
+
+	if err := m.setupFirewall(ctx); err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\nStopping container.\n", err)
+		_ = m.Stop(ctx)
 		lock.Release()
 		return err
 	}
@@ -293,6 +340,95 @@ func (m *Manager) createAndStart(ctx context.Context) (string, error) {
 	}
 
 	return containerID, nil
+}
+
+// setupFirewall applies network sandboxing rules after container start.
+// Called from Launch when mode != "none". Handles all platform fallbacks.
+func (m *Manager) setupFirewall(ctx context.Context) error {
+	mode := m.config.Network.Mode
+	if mode == "" || strings.ToLower(mode) == "none" {
+		return nil
+	}
+
+	if m.platform.OS == "darwin" {
+		fmt.Fprintf(os.Stderr, "Warning: Network filtering is not available on macOS in this version. Container will have unrestricted network access. Set [network] mode = \"none\" to suppress this warning.\n")
+		return nil
+	}
+
+	if m.platform.IsRootless {
+		fmt.Fprintf(os.Stderr, "Warning: Network filtering is unavailable with rootless Docker (iptables requires root). Falling back to unrestricted network access.\n")
+		return nil
+	}
+
+	if !m.platform.SupportsIPTables {
+		fmt.Fprintf(os.Stderr, "Warning: Network filtering requires Linux with iptables. Falling back to unrestricted network access.\n")
+		return nil
+	}
+
+	if err := CheckIPTablesAvailable(ctx); err != nil {
+		fmt.Fprintf(os.Stderr, "Warning: Network filtering requires sudo and iptables. Falling back to unrestricted network access. Set [network] mode = \"none\" to suppress this warning.\n")
+		return nil
+	}
+
+	netID, err := m.cache.NetworkID()
+	if err != nil || netID == "" {
+		return fmt.Errorf("firewall setup: no network ID cached")
+	}
+	bridgeIface := m.BridgeInterfaceName(ctx, netID)
+
+	containerName := ContainerName(m.repoDir)
+	containerHash := containerName[len(containerName)-16:]
+
+	netCfg := m.config.Network
+	httpProxy, httpsProxy, _ := resolveProxy(&netCfg)
+	netCfg.HTTPProxy = httpProxy
+	netCfg.HTTPSProxy = httpsProxy
+	if strings.ToLower(netCfg.Mode) == "whitelist" {
+		proxyHosts := extractProxyHostnames(&netCfg)
+		netCfg.Allow = append(netCfg.Allow, proxyHosts...)
+	}
+
+	runningHashes, _ := m.listRunningZoneHashes(ctx)
+	_ = network.CleanStaleRules(ctx, nil, runningHashes)
+
+	rs, err := network.BuildRuleSet(&netCfg, nil)
+	if err != nil {
+		return fmt.Errorf("%w: %v", ErrFirewallSetup, err)
+	}
+
+	fw := network.NewFirewall(containerHash, bridgeIface, m.cache.Dir(), nil)
+	if err := fw.Apply(ctx, rs); err != nil {
+		_ = fw.Remove(ctx)
+		return fmt.Errorf("%w: %v", ErrFirewallSetup, err)
+	}
+
+	m.firewall = fw
+	refreshCtx, cancel := context.WithCancel(context.Background())
+	m.firewallCancel = cancel
+	fw.StartRefresh(refreshCtx, &netCfg)
+
+	return nil
+}
+
+// listRunningZoneHashes returns the set of container hashes for currently running zone containers.
+// Used for stale rule detection (D-41).
+func (m *Manager) listRunningZoneHashes(ctx context.Context) (map[string]bool, error) {
+	containers, err := m.client.ContainerList(ctx, container.ListOptions{
+		Filters: filters.NewArgs(filters.Arg("label", "com.zone.managed=true")),
+	})
+	if err != nil {
+		return nil, err
+	}
+	hashes := make(map[string]bool)
+	for _, c := range containers {
+		for _, name := range c.Names {
+			name = strings.TrimPrefix(name, "/")
+			if len(name) >= 16 {
+				hashes[name[len(name)-16:]] = true
+			}
+		}
+	}
+	return hashes, nil
 }
 
 // harnessCmd builds the full command slice for the harness entrypoint.

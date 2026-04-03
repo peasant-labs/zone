@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/peasant-labs/zone/internal/cache"
 	"github.com/peasant-labs/zone/internal/config"
@@ -30,6 +31,22 @@ func mapError(err error) (string, int) {
 	case errors.Is(err, cache.ErrLockContention):
 		return "Error: Another zone process is operating on this repo.\n\n" +
 			"  Wait for the other process to finish, or run `zone clean` if it crashed.", 5
+
+	case errors.Is(err, docker.ErrFirewallSetup):
+		return "Error: Failed to apply network firewall rules.\n\n" +
+			"  Check that `sudo iptables -L -n` works on this machine.\n" +
+			"  If sudo requires a password, configure NOPASSWD for iptables.\n" +
+			"  Or set [network] mode = \"none\" to disable filtering.", 4
+
+	case errors.Is(err, docker.ErrSudoUnavailable):
+		return "Error: sudo is not available for iptables commands.\n\n" +
+			"  Network filtering requires `sudo iptables`. Install sudo or\n" +
+			"  set [network] mode = \"none\" to disable network filtering.", 4
+
+	case errors.Is(err, docker.ErrIPTablesUnavailable):
+		return "Error: iptables is not available on this system.\n\n" +
+			"  Install iptables: `sudo apt-get install iptables`\n" +
+			"  Or set [network] mode = \"none\" to disable filtering.", 4
 
 	case errors.Is(err, docker.ErrNetworkUnsupported):
 		return "Error: Network sandboxing is not supported on this platform.\n\n" +
@@ -60,7 +77,15 @@ func mapError(err error) (string, int) {
 				"  then fix unknown keys in zone.toml before retrying.", 2
 		}
 
-		return "Error: " + err.Error() + "\n\n" +
+		msg := err.Error()
+		lower := strings.ToLower(msg)
+		if strings.Contains(lower, "zone.toml") || strings.Contains(lower, "config") {
+			return "Error: " + msg + "\n\n" +
+				"  Run `zone validate` to check your configuration.\n" +
+				"  Fix any issues in zone.toml and retry.", 2
+		}
+
+		return "Error: " + msg + "\n\n" +
 			"  Re-run with `--debug` for more details and inspect command usage with `zone --help`.\n" +
 			"  If this persists, run `zone validate` to confirm configuration health.", 1
 	}
