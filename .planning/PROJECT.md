@@ -78,4 +78,4 @@ Run `zone launch` in any repo and get a sandboxed Docker workspace for your LLM 
 | Typed HarnessConfig struct (not map[string]interface{}) | Type safety, per-harness validation of allowed fields | — Pending |
 
 ---
-*Last updated: 2026-03-30 after Phase 7 completion — env forwarding, SSH agent, auth config, proxy, ports, hooks all wired*
+*Last updated: 2026-04-03 after Phase 9 completion — BubbleTea TUI layer (init wizard, build progress, status view, log viewer) with TTY detection and --plain override*
