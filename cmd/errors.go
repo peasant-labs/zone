@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/peasant-labs/zone/internal/cache"
 	"github.com/peasant-labs/zone/internal/config"
@@ -76,7 +77,15 @@ func mapError(err error) (string, int) {
 				"  then fix unknown keys in zone.toml before retrying.", 2
 		}
 
-		return "Error: " + err.Error() + "\n\n" +
+		msg := err.Error()
+		lower := strings.ToLower(msg)
+		if strings.Contains(lower, "zone.toml") || strings.Contains(lower, "config") {
+			return "Error: " + msg + "\n\n" +
+				"  Run `zone validate` to check your configuration.\n" +
+				"  Fix any issues in zone.toml and retry.", 2
+		}
+
+		return "Error: " + msg + "\n\n" +
 			"  Re-run with `--debug` for more details and inspect command usage with `zone --help`.\n" +
 			"  If this persists, run `zone validate` to confirm configuration health.", 1
 	}
