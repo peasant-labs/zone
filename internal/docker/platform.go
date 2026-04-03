@@ -2,6 +2,7 @@
 package docker
 
 import (
+	"context"
 	"fmt"
 	"os/exec"
 	"os/user"
@@ -10,6 +11,38 @@ import (
 	"strconv"
 	"strings"
 )
+
+// Platform captures host and Docker runtime traits relevant to network sandboxing.
+type Platform struct {
+	OS               string
+	IsDockerDesktop  bool
+	IsRootless       bool
+	SupportsIPTables bool
+}
+
+// DetectPlatform inspects the current runtime and Docker daemon capabilities.
+func DetectPlatform(ctx context.Context, cli DockerClient) Platform {
+	info, _ := cli.Info(ctx)
+	secOpts := strings.Join(info.SecurityOptions, ",")
+	isRootless := strings.Contains(secOpts, "rootless")
+	isMacOS := runtime.GOOS == "darwin"
+
+	return Platform{
+		OS:               runtime.GOOS,
+		IsDockerDesktop:  isMacOS || strings.Contains(info.OperatingSystem, "Docker Desktop"),
+		IsRootless:       isRootless,
+		SupportsIPTables: runtime.GOOS == "linux" && !isRootless,
+	}
+}
+
+// CheckIPTablesAvailable verifies that iptables can be executed non-interactively via sudo.
+func CheckIPTablesAvailable(ctx context.Context) error {
+	cmd := exec.CommandContext(ctx, "sudo", "-n", "iptables", "-L", "-n")
+	if err := cmd.Run(); err != nil {
+		return ErrIPTablesUnavailable
+	}
+	return nil
+}
 
 // HostUID returns the current user's numeric UID.
 // On Linux/macOS, this is the standard POSIX UID.

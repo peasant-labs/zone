@@ -31,6 +31,22 @@ func mapError(err error) (string, int) {
 		return "Error: Another zone process is operating on this repo.\n\n" +
 			"  Wait for the other process to finish, or run `zone clean` if it crashed.", 5
 
+	case errors.Is(err, docker.ErrFirewallSetup):
+		return "Error: Failed to apply network firewall rules.\n\n" +
+			"  Check that `sudo iptables -L -n` works on this machine.\n" +
+			"  If sudo requires a password, configure NOPASSWD for iptables.\n" +
+			"  Or set [network] mode = \"none\" to disable filtering.", 4
+
+	case errors.Is(err, docker.ErrSudoUnavailable):
+		return "Error: sudo is not available for iptables commands.\n\n" +
+			"  Network filtering requires `sudo iptables`. Install sudo or\n" +
+			"  set [network] mode = \"none\" to disable network filtering.", 4
+
+	case errors.Is(err, docker.ErrIPTablesUnavailable):
+		return "Error: iptables is not available on this system.\n\n" +
+			"  Install iptables: `sudo apt-get install iptables`\n" +
+			"  Or set [network] mode = \"none\" to disable filtering.", 4
+
 	case errors.Is(err, docker.ErrNetworkUnsupported):
 		return "Error: Network sandboxing is not supported on this platform.\n\n" +
 			"  Network filtering requires Linux with iptables.\n" +

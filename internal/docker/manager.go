@@ -35,11 +35,12 @@ import (
 // Manager orchestrates Docker container lifecycle operations for a single repository.
 // It holds a Docker client (interface for testability), config, cache, and metadata.
 type Manager struct {
-	client  DockerClient
-	config  *config.MergedConfig
-	cache   *cache.Cache
-	repoDir string // absolute path to repo root
-	version string // zone binary version for template rendering
+	client   DockerClient
+	config   *config.MergedConfig
+	cache    *cache.Cache
+	repoDir  string // absolute path to repo root
+	version  string // zone binary version for template rendering
+	platform Platform
 
 	// attachFn is the function used to attach an interactive TTY session.
 	// Defaults to attachInteractive; overridden in tests with a no-op.
@@ -57,8 +58,9 @@ func NewManager(cfg *config.MergedConfig, c *cache.Cache, repoDir, version strin
 		cli.Close()
 		return nil, fmt.Errorf("%w: %v", ErrDockerNotRunning, err)
 	}
+	platform := DetectPlatform(context.Background(), cli)
 	absDir, _ := filepath.Abs(repoDir)
-	m := &Manager{client: cli, config: cfg, cache: c, repoDir: absDir, version: version}
+	m := &Manager{client: cli, config: cfg, cache: c, repoDir: absDir, version: version, platform: platform}
 	m.attachFn = m.attachInteractive
 	return m, nil
 }
@@ -67,7 +69,7 @@ func NewManager(cfg *config.MergedConfig, c *cache.Cache, repoDir, version strin
 // Used in unit tests to inject a mock client without requiring a live Docker daemon.
 func newManagerWithClient(cli DockerClient, cfg *config.MergedConfig, c *cache.Cache, repoDir, version string) *Manager {
 	absDir, _ := filepath.Abs(repoDir)
-	m := &Manager{client: cli, config: cfg, cache: c, repoDir: absDir, version: version}
+	m := &Manager{client: cli, config: cfg, cache: c, repoDir: absDir, version: version, platform: DetectPlatform(context.Background(), cli)}
 	m.attachFn = m.attachInteractive
 	return m
 }

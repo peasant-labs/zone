@@ -20,6 +20,7 @@ import (
 	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/network"
+	"github.com/docker/docker/api/types/system"
 	"github.com/docker/docker/api/types/volume"
 	"github.com/docker/docker/errdefs"
 	"github.com/docker/go-connections/nat"
@@ -36,6 +37,8 @@ import (
 type mockClient struct {
 	pingErr             error
 	pingResp            types.Ping
+	infoResp            system.Info
+	infoErr             error
 	networkCreateID     string
 	networkCreateErr    error
 	networkRemoveErr    error
@@ -72,6 +75,10 @@ type mockClient struct {
 
 func (m *mockClient) Ping(ctx context.Context) (types.Ping, error) {
 	return m.pingResp, m.pingErr
+}
+
+func (m *mockClient) Info(ctx context.Context) (system.Info, error) {
+	return m.infoResp, m.infoErr
 }
 
 func (m *mockClient) ImageBuild(ctx context.Context, buildContext io.Reader, options types.ImageBuildOptions) (types.ImageBuildResponse, error) {
@@ -1133,6 +1140,9 @@ func makeLaunchMockWithAPIKey(t *testing.T) (*mockClient, *Manager) {
 // when ANTHROPIC_API_KEY is not set (claude-code harness).
 func TestLaunch_RequiredEnvValidation(t *testing.T) {
 	_, m := makeLaunchMockWithAPIKey(t)
+	m.config.Zone.Harness = "custom"
+	m.config.Harness.EntrypointCommand = "custom-agent"
+	m.config.Harness.RequiredEnv = []string{"ANTHROPIC_API_KEY"}
 
 	// Ensure the required key is completely absent (not just empty)
 	t.Setenv("ANTHROPIC_API_KEY", "")
@@ -1151,6 +1161,9 @@ func TestLaunch_RequiredEnvValidation(t *testing.T) {
 // when ANTHROPIC_API_KEY is set.
 func TestLaunch_RequiredEnvValidation_Satisfied(t *testing.T) {
 	_, m := makeLaunchMockWithAPIKey(t)
+	m.config.Zone.Harness = "custom"
+	m.config.Harness.EntrypointCommand = "custom-agent"
+	m.config.Harness.RequiredEnv = []string{"ANTHROPIC_API_KEY"}
 
 	t.Setenv("ANTHROPIC_API_KEY", "test-key-satisfied")
 
