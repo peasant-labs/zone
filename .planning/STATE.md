@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: verifying
-stopped_at: Phase 9 context gathered
-last_updated: "2026-04-03T02:11:39.912Z"
-last_activity: 2026-03-30
+stopped_at: Completed 09-tui-layer-01-PLAN.md
+last_updated: "2026-04-03T03:04:57.636Z"
+last_activity: 2026-04-03
 progress:
   total_phases: 10
   completed_phases: 7
   total_plans: 24
-  completed_plans: 23
+  completed_plans: 24
   percent: 100
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-03-26)
 Phase: 08 (cli-commands-dx) — EXECUTING
 Plan: 3 of 3
 Status: Phase complete — ready for verification
-Last activity: 2026-03-30
+Last activity: 2026-04-03
 
 Progress: [██████████] 100%
 
@@ -64,6 +64,7 @@ Progress: [██████████] 100%
 | Phase 08-cli-commands-dx P01 | 6m | 2 tasks | 9 files |
 | Phase 08-cli-commands-dx P02 | 3m | 2 tasks | 16 files |
 | Phase 08-cli-commands-dx P03 | 13min | 2 tasks | 17 files |
+| Phase 09-tui-layer P01 | 7min | 4 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -101,6 +102,9 @@ Recent decisions affecting current work:
 - [Phase 08]: Applied signal.NotifyContext(SIGNINT,SIGTERM) to all Docker-calling commands and propagated ctx to manager/docker APIs.
 - [Phase 08-cli-commands-dx]: Implemented launch --port/-P by extending LaunchOpts and merging ad-hoc bindings into workspace ports before container creation.
 - [Phase 08-cli-commands-dx]: Added binary-level DX integration tests to lock aliases, help examples, flags, and JSON/scriptability behavior.
+- [Phase 09-tui-layer]: BubbleTea v2 API: tea.Quit (Cmd), v.WindowTitle on View struct, tea.KeyPressMsg; confirmed stable for Phase 9
+- [Phase 09-tui-layer]: RunTUI wrapper (D-27): all TUI programs use RunTUI for panic-safe terminal restore; IsTTY(plainFlag) centralized in internal/tui/tty.go
+- [Phase 09-tui-layer]: Init wizard uses inline rendering (no alt-screen) per D-28; two-screen state machine: screenSelector -> screenPreview
 
 ### Pending Todos
 
@@ -115,6 +119,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-03T02:11:39.902Z
-Stopped at: Phase 9 context gathered
-Resume file: .planning/phases/09-tui-layer/09-CONTEXT.md
+Last session: 2026-04-03T03:04:57.633Z
+Stopped at: Completed 09-tui-layer-01-PLAN.md
+Resume file: None

@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/peasant-labs/zone/internal/cache"
+	"github.com/peasant-labs/zone/internal/tui"
 	"github.com/spf13/cobra"
 )
 
@@ -23,13 +24,38 @@ generated config without editing the file afterward.`,
   zone init --harness claude-code --set resources.cpus=4`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		harnessName, _ := cmd.Flags().GetString("harness")
-		if harnessName == "" {
-			return fmt.Errorf("interactive mode requires a terminal. Use `--harness <name>` for non-interactive init. Interactive harness selection is deferred to Phase 9")
-		}
 
 		cwd, err := os.Getwd()
 		if err != nil {
 			return fmt.Errorf("get working directory: %w", err)
+		}
+
+		if harnessName == "" {
+			plainFlag, _ := cmd.Root().PersistentFlags().GetBool("plain")
+			if !tui.IsTTY(plainFlag) {
+				return fmt.Errorf("no --harness specified and stdin is not a terminal.\n\n" +
+					"  Use `zone init --harness <name>` for non-interactive init.\n" +
+					"  Available: claude-code, opencode, aider, gemini-cli, codex-cli, custom")
+			}
+
+			// Build detection hints map for wizard
+			detected := buildDetectionMap(cwd)
+
+			// Launch BubbleTea init wizard via panic-safe RunTUI (D-27)
+			wizard := tui.NewInitWizard(detected)
+			finalModel, err := tui.RunTUI(wizard)
+			if err != nil {
+				return fmt.Errorf("init wizard: %w", err)
+			}
+
+			result := finalModel.(tui.InitWizard)
+			if result.Cancelled {
+				return fmt.Errorf("init cancelled")
+			}
+			if result.Err != nil {
+				return result.Err
+			}
+			harnessName = result.SelectedHarness
 		}
 
 		tomlPath := filepath.Join(cwd, "zone.toml")
@@ -65,6 +91,44 @@ generated config without editing the file afterward.`,
 func init() {
 	initCmd.Flags().String("harness", "", "Harness to configure (e.g., claude-code, aider)")
 	initCmd.Flags().StringArray("set", nil, "Override config value (e.g., --set resources.memory=8g)")
+}
+
+// buildDetectionMap checks for harness indicator files and returns a map
+// of harness name -> detected. Used by the TUI wizard to show "* detected" hints.
+func buildDetectionMap(dir string) map[string]bool {
+	detected := make(map[string]bool)
+
+	hints := []struct {
+		pattern string
+		harness string
+		isDir   bool
+	}{
+		{".claude", "claude-code", true},
+		{"CLAUDE.md", "claude-code", false},
+		{".opencode", "opencode", true},
+	}
+
+	for _, h := range hints {
+		path := filepath.Join(dir, h.pattern)
+		info, err := os.Stat(path)
+		if err != nil {
+			continue
+		}
+		if h.isDir && !info.IsDir() {
+			continue
+		}
+		detected[h.harness] = true
+	}
+
+	entries, _ := os.ReadDir(dir)
+	for _, e := range entries {
+		if strings.HasPrefix(e.Name(), ".aider") {
+			detected["aider"] = true
+			break
+		}
+	}
+
+	return detected
 }
 
 func detectHarnessHints(cmd *cobra.Command, dir string) {

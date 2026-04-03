@@ -37,8 +37,16 @@ func getZoneBinary(t *testing.T) string {
 			return
 		}
 		cmdZoneBinary = filepath.Join(cmdBinaryTmpDir, "zone")
+		// Resolve the module root from go env GOMOD so tests work in both
+		// the main workspace and git worktrees.
+		gomodOut, gomodErr := exec.Command("go", "env", "GOMOD").Output()
+		if gomodErr != nil {
+			cmdBuildErr = fmt.Errorf("locate go.mod: %w", gomodErr)
+			return
+		}
+		moduleRoot := filepath.Dir(strings.TrimSpace(string(gomodOut)))
 		buildCmd := exec.Command("go", "build", "-o", cmdZoneBinary, ".")
-		buildCmd.Dir = "/workspace/zone"
+		buildCmd.Dir = moduleRoot
 		out, buildErr := buildCmd.CombinedOutput()
 		if buildErr != nil {
 			cmdBuildErr = fmt.Errorf("build failed: %w\n%s", buildErr, out)
