@@ -55,7 +55,7 @@ container instead of creating a duplicate.`,
 			}
 		}
 
-		cfg, _, err := config.LoadMerged(cwd)
+		cfg, _, err := loadMergedFromDir(cwd)
 		if err != nil {
 			return fmt.Errorf("load config: %w", err)
 		}
