@@ -139,6 +139,7 @@ func detectHarnessHints(cmd *cobra.Command, dir string) {
 	}{
 		{pattern: ".claude", harness: "claude-code", isDir: true},
 		{pattern: "CLAUDE.md", harness: "claude-code", isDir: false},
+		{pattern: ".opencode", harness: "opencode", isDir: true},
 	}
 
 	for _, h := range hints {
