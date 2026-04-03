@@ -3,6 +3,7 @@ package network
 import (
 	"context"
 	"errors"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -264,4 +265,73 @@ func TestRemoveRulesByHash(t *testing.T) {
 		require.Len(t, calls, 1) // only -S call
 		assert.Equal(t, []string{"-S"}, calls[0])
 	})
+}
+
+func TestRefreshGlobDenyMatch(t *testing.T) {
+	// Suppress warnings in test
+	old := warnWriter
+	warnWriter = io.Discard
+	defer func() { warnWriter = old }()
+
+	me := &mockExec{output: ""}
+	fw := NewFirewall("abc123def456", "br-test", "", me.mockExecFunc)
+	// Start with a state where sub.evil.com was allowed
+	fw.rules = RuleSet{
+		Mode:       "whitelist",
+		AllowedIPs: map[string]string{"10.0.0.1": "sub.evil.com", "10.0.0.2": "good.com"},
+		DeniedIPs:  map[string]string{},
+	}
+	// Resolver returns IPs for both hostnames
+	fw.resolveFn = mockResolver(map[string][]string{
+		"sub.evil.com": {"10.0.0.1"},
+		"good.com":     {"10.0.0.2"},
+	})
+
+	// Config has a deny glob that should filter sub.evil.com on refresh
+	cfg := &config.NetworkConfig{
+		Mode:  "whitelist",
+		Allow: []string{"sub.evil.com", "good.com"},
+		Deny:  []string{"*.evil.com"},
+	}
+	err := fw.refreshOnce(context.Background(), cfg)
+	require.NoError(t, err)
+
+	// After refresh, sub.evil.com should be excluded by deny glob
+	calls := me.snapshot()
+	assert.NotEmpty(t, calls, "refresh should detect rule change and reapply")
+
+	// The new rules should have good.com but NOT sub.evil.com
+	assert.Equal(t, "good.com", fw.rules.AllowedIPs["10.0.0.2"])
+	assert.NotContains(t, fw.rules.AllowedIPs, "10.0.0.1", "sub.evil.com IP should not be in AllowedIPs after deny glob")
+}
+
+func TestRefreshAllowGlobStored(t *testing.T) {
+	old := warnWriter
+	warnWriter = io.Discard
+	defer func() { warnWriter = old }()
+
+	me := &mockExec{output: ""}
+	fw := NewFirewall("abc123def456", "br-test", "", me.mockExecFunc)
+	fw.rules = RuleSet{Mode: "whitelist", AllowedIPs: map[string]string{}, DeniedIPs: map[string]string{}}
+	fw.resolveFn = mockResolver(map[string][]string{"api.github.com": {"1.2.3.4"}})
+
+	cfg := &config.NetworkConfig{
+		Mode:  "whitelist",
+		Allow: []string{"*.anthropic.com", "api.github.com"},
+	}
+	err := fw.refreshOnce(context.Background(), cfg)
+	require.NoError(t, err)
+
+	// After refresh, the fw.rules should contain the AllowGlobs
+	assert.Len(t, fw.rules.AllowGlobs, 1)
+	assert.Equal(t, "*.anthropic.com", fw.rules.AllowGlobs[0].String())
+}
+
+func containsArg(args []string, needle string) bool {
+	for _, a := range args {
+		if a == needle {
+			return true
+		}
+	}
+	return false
 }

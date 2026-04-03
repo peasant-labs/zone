@@ -22,5 +22,5 @@ echo 'source ~/.zone-bashrc' >> ~/.bashrc
 echo 'source ~/.zone-bashrc' >> ~/.zshrc
 {{- end }}
 
-# Execute harness command, forwarding any extra args
-exec {{ .EntrypointCommand }} "$@"
+# Keep container alive — the harness is launched via `docker exec`
+exec sleep infinity

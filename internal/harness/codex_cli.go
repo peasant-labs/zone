@@ -29,7 +29,7 @@ func (c *CodexCLI) NeedsPython() bool             { return false }
 // Validate checks for cross-harness keys first, then returns the stub error.
 func (c *CodexCLI) Validate() error {
 	// Reject claude-code-specific keys
-	if c.config.SkipPermissions != nil {
+	if c.config.SkipPermissions != nil && *c.config.SkipPermissions {
 		return fmt.Errorf("harness %q does not support key %q (that key is specific to %q)",
 			"codex-cli", "skip_permissions", "claude-code")
 	}

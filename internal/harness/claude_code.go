@@ -36,8 +36,9 @@ func (c *ClaudeCode) EntrypointCommand() string { return "claude" }
 // PromptFlag returns the flag used to pass a prompt string to claude-code.
 func (c *ClaudeCode) PromptFlag() string { return "-p" }
 
-// RequiredEnvVars returns the environment variables that must be set before launch.
-func (c *ClaudeCode) RequiredEnvVars() []string { return []string{"ANTHROPIC_API_KEY"} }
+// RequiredEnvVars returns nil.
+// Claude Code can prompt for authentication interactively when no API key is preconfigured.
+func (c *ClaudeCode) RequiredEnvVars() []string { return nil }
 
 // HomeConfigDir returns the directory where claude-code stores its configuration.
 func (c *ClaudeCode) HomeConfigDir() string { return "~/.claude" }

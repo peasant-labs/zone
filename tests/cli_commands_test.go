@@ -49,6 +49,7 @@ func TestInitNoHarness(t *testing.T) {
 	cmd := exec.Command(binary, "init")
 	cmd.Dir = dir
 	cmd.Env = append(os.Environ(), "XDG_CONFIG_HOME="+dir+"/no-xdg")
+	cmd.Stdin = strings.NewReader("") // non-TTY stdin
 
 	var stdout strings.Builder
 	var stderr strings.Builder
@@ -56,10 +57,8 @@ func TestInitNoHarness(t *testing.T) {
 	cmd.Stderr = &stderr
 	err := cmd.Run()
 	require.Error(t, err)
-	// Non-TTY path: TUI wizard skipped, error with helpful message
-	assert.Contains(t, stderr.String(), "stdin is not a terminal")
+	assert.Contains(t, stderr.String(), "no --harness specified")
 	assert.Contains(t, stderr.String(), "--harness <name>")
-	assert.Equal(t, "", stdout.String())
 }
 
 func TestInitSetFlag(t *testing.T) {

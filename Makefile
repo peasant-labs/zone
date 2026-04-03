@@ -1,7 +1,9 @@
 BINARY := zone
 MODULE := github.com/peasant-labs/zone
 
-.PHONY: build test lint fmt vet clean install
+.PHONY: all build test lint fmt vet clean install
+
+all: build install
 
 build:
 	go build -o bin/$(BINARY) .

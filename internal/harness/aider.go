@@ -31,7 +31,7 @@ func (a *Aider) NeedsPython() bool             { return false }
 // Aider owns python_version, so it does NOT reject that field.
 func (a *Aider) Validate() error {
 	// Reject claude-code-specific keys
-	if a.config.SkipPermissions != nil {
+	if a.config.SkipPermissions != nil && *a.config.SkipPermissions {
 		return fmt.Errorf("harness %q does not support key %q (that key is specific to %q)",
 			"aider", "skip_permissions", "claude-code")
 	}

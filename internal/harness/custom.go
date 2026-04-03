@@ -32,8 +32,8 @@ func (c *Custom) Aliases() map[string]string      { return c.config.CustomAliase
 
 // Validate rejects claude-code-specific keys and requires entrypoint_command.
 func (c *Custom) Validate() error {
-	// Reject claude-code-specific keys
-	if c.config.SkipPermissions != nil {
+	// Reject claude-code-specific keys (only when explicitly enabled)
+	if c.config.SkipPermissions != nil && *c.config.SkipPermissions {
 		return fmt.Errorf("harness %q does not support key %q (that key is specific to %q)",
 			"custom", "skip_permissions", "claude-code")
 	}

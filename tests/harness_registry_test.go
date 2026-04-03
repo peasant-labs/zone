@@ -63,7 +63,7 @@ func TestRegistryAllNames(t *testing.T) {
 	// For registrations that pass Validate(), verify Get() works.
 	// For stubs that always fail Validate(), verify the error is about "not yet implemented"
 	// (not "unknown harness") — they ARE registered.
-	stubs := []string{"opencode", "gemini-cli", "aider", "codex-cli"}
+	stubs := []string{"gemini-cli", "aider", "codex-cli"}
 	for _, name := range stubs {
 		h, err := harness.Get(name, &config.HarnessConfig{})
 		assert.Nil(t, h, "stub harness %q should return nil harness due to Validate() error", name)

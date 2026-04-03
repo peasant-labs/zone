@@ -1,7 +1,11 @@
 // merge.go implements the two-tier config merge strategy.
 package config
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+	"path/filepath"
+)
 
 // Merge combines a GlobalConfig and a RepoConfig into a MergedConfig and
 // AnnotatedConfig. The AnnotatedConfig tracks the source of each field value
@@ -122,6 +126,11 @@ func Merge(global *GlobalConfig, repo *RepoConfig) (*MergedConfig, *AnnotatedCon
 // LoadMerged is a convenience function that loads both the global and repo
 // configs and merges them.
 func LoadMerged(repoPath string) (*MergedConfig, *AnnotatedConfig, error) {
+	// If repoPath is a directory, resolve to zone.toml inside it.
+	if info, err := os.Stat(repoPath); err == nil && info.IsDir() {
+		repoPath = filepath.Join(repoPath, "zone.toml")
+	}
+
 	global, err := LoadGlobal()
 	if err != nil {
 		return nil, nil, fmt.Errorf("global config: %w", err)

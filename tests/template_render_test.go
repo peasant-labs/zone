@@ -154,7 +154,7 @@ func TestRenderDockerfileWithHarnessInstall(t *testing.T) {
 
 // --- Entrypoint Rendering Tests ---
 
-// DOC-02: Entrypoint ends with exec for PID 1 signal handling
+// DOC-02: Entrypoint ends with exec sleep infinity to keep container alive
 func TestRenderEntrypointExec(t *testing.T) {
 	data := docker.EntrypointData{
 		MountPath:         "/workspace",
@@ -163,7 +163,7 @@ func TestRenderEntrypointExec(t *testing.T) {
 	}
 	result, err := docker.RenderEntrypoint(data, "1.0.0")
 	require.NoError(t, err)
-	assert.Contains(t, result, `exec claude "$@"`, "Must end with exec <command> for PID 1 signal handling")
+	assert.Contains(t, result, "exec sleep infinity", "Must keep container alive for docker exec attach")
 }
 
 // DOC-13: Git safe.directory configured

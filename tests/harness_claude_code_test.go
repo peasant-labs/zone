@@ -55,12 +55,11 @@ func TestClaudeCodePromptFlag(t *testing.T) {
 	assert.Equal(t, "-p", h.PromptFlag())
 }
 
-// TestClaudeCodeRequiredEnvVars verifies required env vars list.
+// TestClaudeCodeRequiredEnvVars verifies no required env vars are declared.
 func TestClaudeCodeRequiredEnvVars(t *testing.T) {
 	h := getClaudeCode(t, nil)
 	vars := h.RequiredEnvVars()
-	require.Len(t, vars, 1)
-	assert.Equal(t, "ANTHROPIC_API_KEY", vars[0])
+	assert.Empty(t, vars)
 }
 
 // TestClaudeCodeHomeConfigDir verifies home config directory.

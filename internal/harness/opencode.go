@@ -1,4 +1,4 @@
-// opencode.go implements the opencode stub harness.
+// opencode.go implements the opencode harness.
 package harness
 
 import (
@@ -7,38 +7,46 @@ import (
 	"github.com/peasant-labs/zone/internal/config"
 )
 
-// OpenCode is a stub harness for the opencode AI tool.
-// Validate() always fails with a "not yet implemented" error.
-// Cross-harness keys are rejected with specific errors before the stub error.
+// OpenCode implements the Harness interface for the opencode AI tool.
 type OpenCode struct {
 	BaseHarness
 	config *config.HarnessConfig
 }
 
-func (o *OpenCode) Name() string                 { return "opencode" }
-func (o *OpenCode) InstallCommands() []string     { return nil }
-func (o *OpenCode) EntrypointCommand() string     { return "" }
-func (o *OpenCode) RequiredEnvVars() []string     { return nil }
-func (o *OpenCode) HomeConfigDir() string         { return "" }
-func (o *OpenCode) DefaultAptPackages() []string  { return nil }
-func (o *OpenCode) DefaultNpmPackages() []string  { return nil }
-func (o *OpenCode) DefaultPipPackages() []string  { return nil }
-func (o *OpenCode) NeedsNode() bool               { return false }
-func (o *OpenCode) NeedsPython() bool             { return false }
+func (o *OpenCode) Name() string { return "opencode" }
 
-// Validate checks for cross-harness keys first, then returns the stub error.
+// InstallCommands downloads and installs opencode, then symlinks to PATH.
+func (o *OpenCode) InstallCommands() []string {
+	return []string{
+		"curl -fsSL https://opencode.ai/install | bash",
+		"ln -sf /root/.opencode/bin/opencode /usr/local/bin/opencode",
+	}
+}
+
+func (o *OpenCode) HealthCheck() string       { return "opencode --version" }
+func (o *OpenCode) EntrypointCommand() string  { return "opencode" }
+func (o *OpenCode) RequiredEnvVars() []string  { return nil }
+func (o *OpenCode) HomeConfigDir() string      { return "~/.opencode" }
+func (o *OpenCode) NeedsNode() bool            { return false }
+func (o *OpenCode) NeedsPython() bool          { return false }
+func (o *OpenCode) DefaultAptPackages() []string { return nil }
+func (o *OpenCode) DefaultNpmPackages() []string { return nil }
+func (o *OpenCode) DefaultPipPackages() []string { return nil }
+
+func (o *OpenCode) WelcomeMessage() string {
+	return "Zone workspace: opencode"
+}
+
+// Validate rejects HarnessConfig fields that belong to other harnesses.
 func (o *OpenCode) Validate() error {
-	// Reject claude-code-specific keys
-	if o.config.SkipPermissions != nil {
+	if o.config.SkipPermissions != nil && *o.config.SkipPermissions {
 		return fmt.Errorf("harness %q does not support key %q (that key is specific to %q)",
 			"opencode", "skip_permissions", "claude-code")
 	}
-	// Reject aider-specific keys
 	if o.config.PythonVersion != "" {
 		return fmt.Errorf("harness %q does not support key %q (that key is specific to %q)",
 			"opencode", "python_version", "aider")
 	}
-	// Reject custom-specific keys
 	if len(o.config.InstallCommands) > 0 {
 		return fmt.Errorf("harness %q does not support key %q (that key is specific to %q)",
 			"opencode", "install_commands", "custom")
@@ -67,9 +75,5 @@ func (o *OpenCode) Validate() error {
 		return fmt.Errorf("harness %q does not support key %q (that key is specific to %q)",
 			"opencode", "shell_rc", "custom")
 	}
-	return fmt.Errorf(
-		"the %q harness is not yet fully implemented; use harness = \"custom\" "+
-			"with install_commands and entrypoint_command to configure it manually",
-		o.Name(),
-	)
+	return nil
 }

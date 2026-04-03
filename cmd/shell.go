@@ -21,6 +21,7 @@ var shellCmd = &cobra.Command{
 Starts a shell session even if no harness is running. Useful for
 debugging or manual inspection of the container environment.`,
 	Example: `  zone shell
+  zone shell --root
   zone launch --headless && zone shell`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)

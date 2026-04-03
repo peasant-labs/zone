@@ -27,7 +27,7 @@ config automatically (zero-config quickstart). Reattaches to a running
 container instead of creating a duplicate.`,
 	Example: `  zone launch
   zone launch --headless -p "fix the tests"
-  zone launch -P 3000:3000 -P 8080:8080
+  zone launch -P 3000:3000
   zone launch -- --model sonnet`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)

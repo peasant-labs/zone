@@ -29,7 +29,7 @@ func (g *GeminiCLI) NeedsPython() bool             { return false }
 // Validate checks for cross-harness keys first, then returns the stub error.
 func (g *GeminiCLI) Validate() error {
 	// Reject claude-code-specific keys
-	if g.config.SkipPermissions != nil {
+	if g.config.SkipPermissions != nil && *g.config.SkipPermissions {
 		return fmt.Errorf("harness %q does not support key %q (that key is specific to %q)",
 			"gemini-cli", "skip_permissions", "claude-code")
 	}

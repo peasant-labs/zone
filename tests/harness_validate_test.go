@@ -17,11 +17,16 @@ func boolPtr(b bool) *bool { return &b }
 // Stub harness tests
 // ---------------------------------------------------------------------------
 
-func TestStubHarnessValidateOpenCode(t *testing.T) {
-	_, err := harness.Get("opencode", &config.HarnessConfig{})
-	require.Error(t, err)
-	assert.ErrorContains(t, err, `the "opencode" harness is not yet fully implemented`)
-	assert.ErrorContains(t, err, `use harness = "custom" with install_commands and entrypoint_command to configure it manually`)
+func TestOpenCodeHarnessValidates(t *testing.T) {
+	h, err := harness.Get("opencode", &config.HarnessConfig{})
+	require.NoError(t, err)
+	assert.Equal(t, "opencode", h.Name())
+	assert.Equal(t, "opencode", h.EntrypointCommand())
+	assert.Equal(t, "opencode --version", h.HealthCheck())
+	assert.Equal(t, "~/.opencode", h.HomeConfigDir())
+	assert.False(t, h.NeedsNode())
+	assert.False(t, h.NeedsPython())
+	assert.Len(t, h.InstallCommands(), 2)
 }
 
 func TestStubHarnessValidateGeminiCLI(t *testing.T) {
@@ -54,7 +59,6 @@ func TestStubHarnessNames(t *testing.T) {
 		// which includes the harness name via the prefix "harness %q config:".
 		// Instead test via registry inspection approach: build with valid entry and verify name
 		// after Get fails, name is still embedded in error.
-		{"opencode", "opencode"},
 		{"gemini-cli", "gemini-cli"},
 		{"aider", "aider"},
 		{"codex-cli", "codex-cli"},

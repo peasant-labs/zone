@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 10-network-sandboxing-04-PLAN.md
+stopped_at: Completed 10-network-sandboxing plans 04 and 05
 last_updated: "2026-04-03T08:27:15.148Z"
 last_activity: 2026-04-03
 progress:
@@ -66,7 +66,8 @@ Progress: [██████████] 100%
 | Phase 08-cli-commands-dx P03 | 13min | 2 tasks | 17 files |
 | Phase 10-network-sandboxing P01 | 2 min | 3 tasks | 9 files |
 | Phase 10-network-sandboxing P03 | 11 min | 2 tasks | 5 files |
-| Phase 10-network-sandboxing P04 | 12 | 2 tasks | 5 files |
+| Phase 10-network-sandboxing P04 | 12 min | 2 tasks | 5 files |
+| Phase 10-network-sandboxing P05 | 12 min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -113,6 +114,7 @@ Recent decisions affecting current work:
 - [Phase 10-network-sandboxing]: RemoveRulesByHash exported as thin wrapper over removeRulesForHash enabling stable public API for standalone cleanup
 - [Phase 10-network-sandboxing]: reconstructFirewallForCleanup returns nil for mode=none/empty — avoids unnecessary sudo invocations; containerHash from last 16 chars of ContainerName(repoDir)
 - [Phase 10-network-sandboxing]: cmd/clean.go uses nil execFn for RemoveRulesByHash fallback to DefaultExecFunc (sudo iptables); Linux-only guard with runtime.GOOS check
+- [Phase 10-05-glob-enforcement]: Whitelist allow glob downgraded from hard error to warning + AllowGlobs storage; deny globs in blocklist mode stored in DenyGlobs with warning; warnWriter io.Writer var pattern for test-overridable warning output; refreshOnce suppresses warnings with io.Discard.
 
 ### Pending Todos
 
@@ -128,5 +130,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-03T08:27:15.144Z
-Stopped at: Completed 10-network-sandboxing-04-PLAN.md
+Stopped at: Completed 10-network-sandboxing plans 04 and 05
 Resume file: None

@@ -186,7 +186,7 @@ Plans:
 - [x] 10-02-PLAN.md — Firewall rule generation (BuildRuleSet), Firewall Apply/Remove, iptables execution, rules cache, tests
 - [x] 10-03-PLAN.md — Manager integration: setupFirewall in Launch, cleanup in Stop/Destroy, refresh goroutine, stale rule cleanup, proxy auto-allowlisting
 - [x] 10-04-PLAN.md — Gap closure: durable firewall cleanup across fresh stop/destroy/clean processes (NET-05)
-- [ ] 10-05-PLAN.md — Gap closure: hostname glob enforcement end-to-end with warning-based degradation (NET-12)
+- [x] 10-05-PLAN.md — Gap closure: hostname glob enforcement end-to-end with warning-based degradation (NET-12)
 
 ## Progress
 
@@ -204,4 +204,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 7. Environment, Auth & Forwarding | 3/3 | Complete   | 2026-03-30 |
 | 8. CLI Commands & DX | 0/3 | Not started | - |
 | 9. TUI Layer | 2/3 | In Progress|  |
-| 10. Network Sandboxing | 4/5 | In Progress|  |
+| 10. Network Sandboxing | 5/5 | In Progress|  |

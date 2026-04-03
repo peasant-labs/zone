@@ -11,6 +11,15 @@ import (
 	"github.com/peasant-labs/zone/internal/harness"
 )
 
+const defaultMountPath = "/workspace"
+
+func resolveMountPath(mountPath string) string {
+	if mountPath == "" {
+		return defaultMountPath
+	}
+	return mountPath
+}
+
 // BuildDockerfileData translates a Harness and MergedConfig into a DockerfileData
 // struct ready for RenderDockerfile(). The caller (Phase 6) must still set HostUID
 // and MacOSUsername after calling this function, as those are runtime values that
@@ -24,6 +33,7 @@ func BuildDockerfileData(h harness.Harness, cfg *config.MergedConfig) Dockerfile
 	if pythonVer == "" {
 		pythonVer = "3.12"
 	}
+	mountPath := resolveMountPath(cfg.Workspace.MountPath)
 	return DockerfileData{
 		BaseImage:              cfg.Zone.BaseImage,
 		AptPackages:            mergeSlices(cfg.Packages.Apt, h.DefaultAptPackages()),
@@ -38,7 +48,7 @@ func BuildDockerfileData(h harness.Harness, cfg *config.MergedConfig) Dockerfile
 		InstallZsh:             cfg.Zone.Shell == "zsh",
 		Shell:                  cfg.Zone.Shell,
 		PostInstallCommands:    h.PostInstallCommands(),
-		MountPath:              cfg.Workspace.MountPath,
+		MountPath:              mountPath,
 		// HostUID and MacOSUsername are set by the Phase 6 caller (runtime values)
 	}
 }
@@ -56,9 +66,10 @@ func BuildEntrypointData(h harness.Harness, cfg *config.MergedConfig) Entrypoint
 	}
 
 	name, email, forward := DetectGitIdentity()
+	mountPath := resolveMountPath(cfg.Workspace.MountPath)
 
 	return EntrypointData{
-		MountPath:          cfg.Workspace.MountPath,
+		MountPath:          mountPath,
 		ForwardGitConfig:   forward,
 		GitUserName:        name,
 		GitUserEmail:       email,
@@ -71,9 +82,10 @@ func BuildEntrypointData(h harness.Harness, cfg *config.MergedConfig) Entrypoint
 // BuildShellRCData translates a Harness and MergedConfig into a ShellRCData struct
 // ready for RenderShellRC().
 func BuildShellRCData(h harness.Harness, cfg *config.MergedConfig) ShellRCData {
+	mountPath := resolveMountPath(cfg.Workspace.MountPath)
 	return ShellRCData{
 		HarnessName:    h.Name(),
-		MountPath:      cfg.Workspace.MountPath,
+		MountPath:      mountPath,
 		Aliases:        h.Aliases(),
 		ShellRC:        h.ShellRC(),
 		WelcomeMessage: h.WelcomeMessage(),

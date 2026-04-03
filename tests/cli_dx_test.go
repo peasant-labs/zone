@@ -266,8 +266,9 @@ func TestUnknownKeysRemediationHintOnStderr(t *testing.T) {
 	assert.Contains(t, strings.ToLower(msg), "unknown")
 	assert.Contains(t, msg, "zone validate")
 
+	// Wrapped error containing "zone.toml" gets config-specific remediation
 	wrapped := errors.New("wrapper: " + err.Error())
 	msg2, code2 := zonecmd.MapError(wrapped)
-	assert.Equal(t, 1, code2, "non-sentinel string errors should fall back to generic mapping")
-	assert.Contains(t, msg2, "zone --help")
+	assert.Equal(t, 2, code2, "config-related errors should map to exit code 2")
+	assert.Contains(t, msg2, "zone validate")
 }

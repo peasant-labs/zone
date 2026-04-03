@@ -21,6 +21,7 @@ var joinCmd = &cobra.Command{
 Opens an interactive shell session inside the container without
 restarting the harness. Useful for running parallel tasks.`,
 	Example: `  zone join
+  zone join --root
   zone up && zone join`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
