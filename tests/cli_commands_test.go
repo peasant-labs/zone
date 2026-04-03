@@ -56,8 +56,8 @@ func TestInitNoHarness(t *testing.T) {
 	cmd.Stderr = &stderr
 	err := cmd.Run()
 	require.Error(t, err)
-	assert.Contains(t, stderr.String(), "interactive mode requires a terminal")
-	assert.Contains(t, stderr.String(), "Phase 9")
+	// Non-TTY path: TUI wizard skipped, error with helpful message
+	assert.Contains(t, stderr.String(), "stdin is not a terminal")
 	assert.Contains(t, stderr.String(), "--harness <name>")
 	assert.Equal(t, "", stdout.String())
 }
