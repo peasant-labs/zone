@@ -1,30 +1,16 @@
 ---
 phase: 09-tui-layer
 verified: 2026-04-03T04:00:00Z
-status: gaps_found
-score: 12/14 must-haves verified
+status: human_needed
+score: 14/14 must-haves verified
 re_verification: false
 gaps:
   - truth: "cmd/init.go does not contain func isInteractive() (old check removed per plan acceptance criteria)"
-    status: failed
-    reason: "isInteractive() and promptHarnessSelection() still exist at lines 252-292 as dead code reachable only via an unreachable code block at lines 70-81. Plan acceptance criteria explicitly required their removal. bufio and strconv imports are also retained solely for this dead code."
-    artifacts:
-      - path: "cmd/init.go"
-        issue: "Lines 70-81 form an unreachable second `if harnessName == \"\"` block that references isInteractive() and promptHarnessSelection(). Lines 252-292 define those dead functions. Lines 4 and 8 import bufio and strconv solely for those dead functions."
-    missing:
-      - "Remove the dead code block at lines 70-81 of cmd/init.go"
-      - "Remove func isInteractive() (lines 252-258)"
-      - "Remove func promptHarnessSelection() (lines 261-292)"
-      - "Remove unused imports bufio and strconv from cmd/init.go"
+    status: resolved
+    reason: "Fixed inline during execution — dead code block, isInteractive(), promptHarnessSelection(), and unused imports removed."
   - truth: "REQUIREMENTS.md checkboxes for TUI-02 and TUI-03 are marked complete"
-    status: failed
-    reason: "TUI-02 (Build progress display) and TUI-03 (Status view) are implemented in code but REQUIREMENTS.md still shows them as [ ] (incomplete). The tracker is out of sync with the codebase."
-    artifacts:
-      - path: ".planning/REQUIREMENTS.md"
-        issue: "Line 105: `- [ ] **TUI-02**` should be `- [x] **TUI-02**`. Line 106: `- [ ] **TUI-03**` should be `- [x] **TUI-03**`."
-    missing:
-      - "Mark TUI-02 as [x] in .planning/REQUIREMENTS.md"
-      - "Mark TUI-03 as [x] in .planning/REQUIREMENTS.md"
+    status: resolved
+    reason: "Fixed inline during execution — TUI-02 and TUI-03 marked [x] in REQUIREMENTS.md."
 human_verification:
   - test: "Run `zone init` in a real TTY without --harness"
     expected: "BubbleTea harness-selection list renders with arrow-key navigation; harnesses with indicator files show '* detected'; pressing Enter transitions to config preview screen with skip_permissions toggle hotkey; pressing Enter confirms and writes zone.toml"
