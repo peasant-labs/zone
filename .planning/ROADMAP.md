@@ -180,7 +180,11 @@ Plans:
   4. iptables rules are tagged with the container ID and cleaned up when the container stops or `zone clean` runs
   5. Hostname glob patterns (e.g., `*.anthropic.com`) match correctly in both whitelist and blocklist rules
   6. Stale rules from a previous crashed Zone process are detected and removed on the next startup
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 10-01-PLAN.md — Platform detection, DockerClient.Info(), hostname glob matcher, sentinel errors, tests
+- [ ] 10-02-PLAN.md — Firewall rule generation (BuildRuleSet), Firewall Apply/Remove, iptables execution, rules cache, tests
+- [ ] 10-03-PLAN.md — Manager integration: setupFirewall in Launch, cleanup in Stop/Destroy, refresh goroutine, stale rule cleanup, proxy auto-allowlisting
 
 ## Progress
 
@@ -198,4 +202,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 7. Environment, Auth & Forwarding | 3/3 | Complete   | 2026-03-30 |
 | 8. CLI Commands & DX | 0/3 | Not started | - |
 | 9. TUI Layer | 2/3 | In Progress|  |
-| 10. Network Sandboxing | 0/TBD | Not started | - |
+| 10. Network Sandboxing | 0/3 | Not started | - |
