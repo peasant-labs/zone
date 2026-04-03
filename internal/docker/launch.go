@@ -39,6 +39,43 @@ type LaunchOpts struct {
 	Ports []string
 }
 
+// NeedsBuild returns true if a Docker image build is required.
+// It checks force rebuild, hash mismatch, and image existence.
+// This is the same logic as buildIfNeeded but returns bool instead of building.
+func (m *Manager) NeedsBuild(ctx context.Context, forceRebuild bool) bool {
+	if forceRebuild {
+		return true
+	}
+	current, err := cache.ComputeHash(m.config, m.version)
+	if err != nil {
+		return true
+	}
+	cached, err := m.cache.ConfigHash()
+	if err != nil {
+		return true
+	}
+	if current != cached {
+		return true
+	}
+	imageID, err := m.cache.ImageID()
+	if err != nil || imageID == "" {
+		return true
+	}
+	if _, _, err := m.client.ImageInspectWithRaw(ctx, imageID); err != nil {
+		return true
+	}
+	return false
+}
+
+// Restart stops the current container and relaunches it with default options.
+// Used by zone status TUI hotkey 'r'.
+func (m *Manager) Restart(ctx context.Context) error {
+	if err := m.Stop(ctx); err != nil {
+		return err
+	}
+	return m.Launch(ctx, LaunchOpts{})
+}
+
 // Launch implements the full zone launch state machine:
 //
 //  1. Acquire exclusive lock on .zone/
