@@ -163,6 +163,13 @@ func removeRulesForHash(ctx context.Context, execFn ExecFunc, hash string) error
 	return nil
 }
 
+// RemoveRulesByHash removes all iptables rules tagged with "zone-{hash}".
+// This is a standalone function that does not require a Firewall instance.
+// Used by cleanup paths that run in fresh processes without launch state.
+func RemoveRulesByHash(ctx context.Context, execFn ExecFunc, hash string) error {
+	return removeRulesForHash(ctx, execFn, hash)
+}
+
 var zoneHashRe = regexp.MustCompile(`zone-([a-z0-9]+)(?:\s|$|")`)
 
 // CleanStaleRules removes rules belonging to non-running zone containers.

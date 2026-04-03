@@ -364,11 +364,16 @@ func (m *Manager) Stop(ctx context.Context) error {
 	}
 
 	// Remove iptables rules before removing the network (D-38)
-	if m.firewall != nil {
-		if err := m.firewall.Remove(ctx); err != nil {
+	// If m.firewall is nil (fresh process), reconstruct from cache/naming.
+	fw := m.firewall
+	if fw == nil {
+		fw = m.reconstructFirewallForCleanup(ctx)
+	}
+	if fw != nil {
+		if err := fw.Remove(ctx); err != nil {
 			fmt.Fprintf(os.Stderr, "Warning: failed to remove firewall rules: %v\n", err)
 		}
-		_ = m.firewall.RemoveRulesCache()
+		_ = fw.RemoveRulesCache()
 		m.firewall = nil
 	}
 
@@ -391,6 +396,38 @@ func (m *Manager) Stop(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+// reconstructFirewallForCleanup creates a Firewall instance from cached/derived
+// state for cleanup purposes. Used when m.firewall is nil (fresh process that
+// didn't launch the container) but firewall rules may exist on the host.
+//
+// Returns nil if:
+// - Network mode is "none" or empty (no firewall rules to clean)
+// - Platform doesn't support iptables
+// - repoDir is empty (can't derive container hash)
+func (m *Manager) reconstructFirewallForCleanup(ctx context.Context) *network.Firewall {
+	mode := m.config.Network.Mode
+	if mode == "" || strings.ToLower(mode) == "none" {
+		return nil
+	}
+	if !m.platform.SupportsIPTables {
+		return nil
+	}
+
+	containerName := ContainerName(m.repoDir)
+	if len(containerName) < 16 {
+		return nil
+	}
+	containerHash := containerName[len(containerName)-16:]
+
+	netID, _ := m.cache.NetworkID()
+	bridgeIface := ""
+	if netID != "" {
+		bridgeIface = m.BridgeInterfaceName(ctx, netID)
+	}
+
+	return network.NewFirewall(containerHash, bridgeIface, m.cache.Dir(), nil)
 }
 
 // Destroy performs a full teardown: Stop, remove image, remove home volume, and
