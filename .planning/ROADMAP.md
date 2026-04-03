@@ -21,7 +21,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 7: Environment, Auth & Forwarding** - Env vars, SSH agent, auth copy, proxy, ports, hooks (completed 2026-03-30)
 - [ ] **Phase 8: CLI Commands & DX** - All commands wired, exit codes, signals, JSON output, aliases
 - [ ] **Phase 9: TUI Layer** - BubbleTea init wizard, build progress, status view, log viewer
-- [ ] **Phase 10: Network Sandboxing** - Host-side iptables whitelist/blocklist, hostname glob, cleanup
+- [x] **Phase 10: Network Sandboxing** - Host-side iptables whitelist/blocklist, hostname glob, cleanup (completed 2026-04-03)
 
 ## Phase Details
 
@@ -204,4 +204,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 7. Environment, Auth & Forwarding | 3/3 | Complete   | 2026-03-30 |
 | 8. CLI Commands & DX | 0/3 | Not started | - |
 | 9. TUI Layer | 2/3 | In Progress|  |
-| 10. Network Sandboxing | 5/5 | In Progress|  |
+| 10. Network Sandboxing | 5/5 | Complete    | 2026-04-03 |
