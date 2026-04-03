@@ -1317,3 +1317,52 @@ func TestBuildImage_ProxyBuildArgs(t *testing.T) {
 	require.True(t, ok, "http_proxy (lowercase) should be in BuildArgs")
 	assert.Equal(t, "http://proxy:8080", *valLower)
 }
+
+// TestStop_FreshProcessFirewallCleanup verifies that Stop removes firewall rules
+// even when m.firewall is nil (simulating a fresh zone stop process).
+func TestStop_FreshProcessFirewallCleanup(t *testing.T) {
+	mc := &mockClient{}
+	cfg := newDefaultConfig()
+	cfg.Network.Mode = "whitelist"
+	m, _ := newTestManager(t, mc, cfg)
+
+	// Override platform to simulate Linux with iptables support
+	m.platform = Platform{OS: "linux", SupportsIPTables: true}
+
+	require.NoError(t, m.cache.EnsureDir())
+	require.NoError(t, m.cache.SetContainerID("container-abc"))
+	require.NoError(t, m.cache.SetNetworkID("net-xyz"))
+
+	// m.firewall is nil -- simulating a fresh process
+	assert.Nil(t, m.firewall)
+
+	// reconstructFirewallForCleanup should produce a non-nil Firewall
+	fw := m.reconstructFirewallForCleanup(context.Background())
+	assert.NotNil(t, fw, "reconstructFirewallForCleanup should return Firewall when mode=whitelist and platform supports iptables")
+
+	// Verify Stop completes without error (cleanup will fail silently
+	// since mock doesn't have real iptables, but the path is exercised)
+	err := m.Stop(context.Background())
+	require.NoError(t, err)
+}
+
+// TestStop_FreshProcessNoFirewallWhenModeNone verifies that Stop does NOT
+// attempt firewall cleanup when mode=none.
+func TestStop_FreshProcessNoFirewallWhenModeNone(t *testing.T) {
+	mc := &mockClient{}
+	cfg := newDefaultConfig()
+	cfg.Network.Mode = "none"
+	m, _ := newTestManager(t, mc, cfg)
+
+	m.platform = Platform{OS: "linux", SupportsIPTables: true}
+	require.NoError(t, m.cache.EnsureDir())
+	require.NoError(t, m.cache.SetContainerID("container-abc"))
+	require.NoError(t, m.cache.SetNetworkID("net-xyz"))
+
+	assert.Nil(t, m.firewall)
+	fw := m.reconstructFirewallForCleanup(context.Background())
+	assert.Nil(t, fw, "reconstructFirewallForCleanup should return nil when mode=none")
+
+	err := m.Stop(context.Background())
+	require.NoError(t, err)
+}

@@ -236,3 +236,32 @@ func firstCallContaining(t *testing.T, calls [][]string, needle string) []string
 	t.Fatalf("no call contained %q", needle)
 	return nil
 }
+
+func TestRemoveRulesByHash(t *testing.T) {
+	t.Run("removes matching rules", func(t *testing.T) {
+		me := &mockExec{output: strings.Join([]string{
+			`-I FORWARD 1 -i br-test -d 1.2.3.4 -j ACCEPT -m comment --comment "zone-testhash12345678"`,
+			`-A FORWARD -i br-test -j DROP -m comment --comment "zone-testhash12345678"`,
+			`-I FORWARD 1 -i br-other -d 9.9.9.9 -j ACCEPT -m comment --comment "zone-otherhash1234"`,
+		}, "\n")}
+		err := RemoveRulesByHash(context.Background(), me.mockExecFunc, "testhash12345678")
+		require.NoError(t, err)
+		calls := me.snapshot()
+		// -S list call, then 2 delete calls for testhash rules (not otherhash)
+		require.Len(t, calls, 3)
+		assert.Equal(t, []string{"-S"}, calls[0])
+		assert.Equal(t, "-D", calls[1][0])
+		assert.Contains(t, strings.Join(calls[1], " "), "testhash12345678")
+		assert.Equal(t, "-D", calls[2][0])
+		assert.Contains(t, strings.Join(calls[2], " "), "testhash12345678")
+	})
+
+	t.Run("no matching rules", func(t *testing.T) {
+		me := &mockExec{output: `-I FORWARD 1 -i br-other -d 9.9.9.9 -j ACCEPT -m comment --comment "zone-otherhash1234"`}
+		err := RemoveRulesByHash(context.Background(), me.mockExecFunc, "nonexistent12345")
+		require.NoError(t, err)
+		calls := me.snapshot()
+		require.Len(t, calls, 1) // only -S call
+		assert.Equal(t, []string{"-S"}, calls[0])
+	})
+}
