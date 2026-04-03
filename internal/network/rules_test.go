@@ -1,6 +1,7 @@
 package network
 
 import (
+	"bytes"
 	"fmt"
 	"testing"
 
@@ -74,13 +75,78 @@ func TestBuildRuleSetEmptyModeDefaultsNone(t *testing.T) {
 	assert.Equal(t, "none", rules.Mode)
 }
 
-func TestBuildRuleSetGlobInWhitelistAllowReturnsError(t *testing.T) {
-	_, err := BuildRuleSet(&config.NetworkConfig{
+func TestBuildRuleSetWhitelistAllowGlobWarns(t *testing.T) {
+	var buf bytes.Buffer
+	old := warnWriter
+	warnWriter = &buf
+	defer func() { warnWriter = old }()
+
+	rules, err := BuildRuleSet(&config.NetworkConfig{
 		Mode:  "whitelist",
-		Allow: []string{"*.anthropic.com"},
-	}, mockResolver(nil))
-	require.Error(t, err)
-	assert.Contains(t, err.Error(), "glob patterns in whitelist allow list are not supported")
+		Allow: []string{"*.anthropic.com", "api.github.com"},
+	}, mockResolver(map[string][]string{"api.github.com": {"1.2.3.4"}}))
+	require.NoError(t, err, "allow globs should warn, not error")
+	assert.Len(t, rules.AllowGlobs, 1)
+	assert.Equal(t, "*.anthropic.com", rules.AllowGlobs[0].String())
+	assert.Equal(t, "api.github.com", rules.AllowedIPs["1.2.3.4"])
+	assert.Contains(t, buf.String(), "cannot be DNS-resolved")
+}
+
+func TestBuildRuleSetWhitelistDenyGlobFilters(t *testing.T) {
+	var buf bytes.Buffer
+	old := warnWriter
+	warnWriter = &buf
+	defer func() { warnWriter = old }()
+
+	rules, err := BuildRuleSet(&config.NetworkConfig{
+		Mode:  "whitelist",
+		Allow: []string{"sub.evil.com", "good.com"},
+		Deny:  []string{"*.evil.com"},
+	}, mockResolver(map[string][]string{
+		"sub.evil.com": {"10.0.0.1"},
+		"good.com":     {"10.0.0.2"},
+	}))
+	require.NoError(t, err)
+	// sub.evil.com should be filtered out by deny glob *.evil.com via MatchAny
+	assert.NotContains(t, rules.AllowedIPs, "10.0.0.1", "sub.evil.com should be denied by glob")
+	assert.Equal(t, "good.com", rules.AllowedIPs["10.0.0.2"])
+	assert.Len(t, rules.DenyGlobs, 1)
+	assert.Equal(t, "*.evil.com", rules.DenyGlobs[0].String())
+}
+
+func TestBuildRuleSetBlocklistDenyGlob(t *testing.T) {
+	var buf bytes.Buffer
+	old := warnWriter
+	warnWriter = &buf
+	defer func() { warnWriter = old }()
+
+	rules, err := BuildRuleSet(&config.NetworkConfig{
+		Mode: "blocklist",
+		Deny: []string{"*.evil.com", "literal.bad.com"},
+	}, mockResolver(map[string][]string{"literal.bad.com": {"5.6.7.8"}}))
+	require.NoError(t, err)
+	// literal.bad.com resolved to IP
+	assert.Equal(t, "literal.bad.com", rules.DeniedIPs["5.6.7.8"])
+	// *.evil.com stored as glob (cannot resolve)
+	assert.Len(t, rules.DenyGlobs, 1)
+	assert.Equal(t, "*.evil.com", rules.DenyGlobs[0].String())
+	assert.Contains(t, buf.String(), "cannot be DNS-resolved")
+}
+
+func TestRulesEqualWithGlobs(t *testing.T) {
+	cp1, _ := Compile("*.evil.com")
+	cp2, _ := Compile("*.evil.com")
+	cp3, _ := Compile("*.other.com")
+
+	a := RuleSet{Mode: "whitelist", AllowedIPs: map[string]string{}, DeniedIPs: map[string]string{}, DenyGlobs: []CompiledPattern{cp1}}
+	b := RuleSet{Mode: "whitelist", AllowedIPs: map[string]string{}, DeniedIPs: map[string]string{}, DenyGlobs: []CompiledPattern{cp2}}
+	assert.True(t, RulesEqual(a, b), "same globs should be equal")
+
+	c := RuleSet{Mode: "whitelist", AllowedIPs: map[string]string{}, DeniedIPs: map[string]string{}, DenyGlobs: []CompiledPattern{cp3}}
+	assert.False(t, RulesEqual(a, c), "different globs should not be equal")
+
+	d := RuleSet{Mode: "whitelist", AllowedIPs: map[string]string{}, DeniedIPs: map[string]string{}}
+	assert.False(t, RulesEqual(a, d), "globs vs no globs should not be equal")
 }
 
 func TestNormalizeMode(t *testing.T) {
