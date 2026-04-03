@@ -165,9 +165,9 @@ Plans:
   5. Terminal state is fully restored after any TUI session, including forced exits and panics
 **Plans**: 3 plans
 Plans:
-- [ ] 09-01-PLAN.md — Install BubbleTea v2 deps, TTY helper, Init Wizard model, wire cmd/init.go
+- [x] 09-01-PLAN.md — Install BubbleTea v2 deps, TTY helper, Init Wizard model, wire cmd/init.go
 - [ ] 09-02-PLAN.md — Build Progress model with channel adapter, Status View model, wire cmd/launch.go and cmd/status.go
-- [ ] 09-03-PLAN.md — Log Viewer model with follow mode and search, wire cmd/logs.go
+- [x] 09-03-PLAN.md — Log Viewer model with follow mode and search, wire cmd/logs.go
 
 ### Phase 10: Network Sandboxing
 **Goal**: Containers running on Linux are network-isolated via host-side iptables rules that survive process crashes and clean up after themselves
@@ -197,5 +197,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 6. Docker Lifecycle Core | 4/4 | Complete   | 2026-03-29 |
 | 7. Environment, Auth & Forwarding | 3/3 | Complete   | 2026-03-30 |
 | 8. CLI Commands & DX | 0/3 | Not started | - |
-| 9. TUI Layer | 0/3 | Not started | - |
+| 9. TUI Layer | 2/3 | In Progress|  |
 | 10. Network Sandboxing | 0/TBD | Not started | - |
