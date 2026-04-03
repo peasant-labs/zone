@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Completed 10-network-sandboxing-02-PLAN.md
-last_updated: "2026-04-03T04:32:30.232Z"
+status: verifying
+stopped_at: Completed 10-network-sandboxing-03-PLAN.md
+last_updated: "2026-04-03T04:41:23.212Z"
 last_activity: 2026-04-03
 progress:
   total_phases: 10
-  completed_phases: 8
+  completed_phases: 9
   total_plans: 30
-  completed_plans: 28
-  percent: 93
+  completed_plans: 29
+  percent: 100
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-03-26)
 
 Phase: 10 (network-sandboxing) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-03
 
 Progress: [██████████] 100%
@@ -65,6 +65,7 @@ Progress: [██████████] 100%
 | Phase 08-cli-commands-dx P02 | 3m | 2 tasks | 16 files |
 | Phase 08-cli-commands-dx P03 | 13min | 2 tasks | 17 files |
 | Phase 10-network-sandboxing P01 | 2 min | 3 tasks | 9 files |
+| Phase 10-network-sandboxing P03 | 11 min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -106,6 +107,8 @@ Recent decisions affecting current work:
 - [Phase 10-network-sandboxing]: Hostname rules accept only literals and simple single-label globs, while filepath.Match handles actual wildcard matching.
 - [Phase 10-network-sandboxing]: Firewall setup, sudo, and iptables failures all map to exit code 4 with actionable remediation hints.
 - [Phase 10-network-sandboxing]: Firewall refresh uses an injectable resolver plus a small refreshOnce helper to keep the 5-minute loop testable without sleeping in tests.
+- [Phase 10-network-sandboxing]: Firewall setup runs after container start and stores refresh cancellation on Manager so stop/destroy can tear rules down before network removal.
+- [Phase 10-network-sandboxing]: Proxy hostnames are extracted from the effective proxy configuration, including auto-detected host proxy env vars, before building whitelist rules.
 
 ### Pending Todos
 
@@ -120,6 +123,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-03T04:32:30.232Z
-Stopped at: Completed 10-network-sandboxing-02-PLAN.md
+Last session: 2026-04-03T04:41:23.209Z
+Stopped at: Completed 10-network-sandboxing-03-PLAN.md
 Resume file: None
