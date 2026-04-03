@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: verifying
-stopped_at: Completed 09-tui-layer-02-PLAN.md
-last_updated: "2026-04-03T03:14:01.818Z"
+stopped_at: Completed 09-tui-layer-03-PLAN.md
+last_updated: "2026-04-03T03:11:32.360Z"
 last_activity: 2026-04-03
 progress:
   total_phases: 10
@@ -65,7 +65,7 @@ Progress: [██████████] 100%
 | Phase 08-cli-commands-dx P02 | 3m | 2 tasks | 16 files |
 | Phase 08-cli-commands-dx P03 | 13min | 2 tasks | 17 files |
 | Phase 09-tui-layer P01 | 7min | 4 tasks | 7 files |
-| Phase 09-tui-layer P02 | 5min | 2 tasks | 6 files |
+| Phase 09-tui-layer P03 | 8min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -106,9 +106,9 @@ Recent decisions affecting current work:
 - [Phase 09-tui-layer]: BubbleTea v2 API: tea.Quit (Cmd), v.WindowTitle on View struct, tea.KeyPressMsg; confirmed stable for Phase 9
 - [Phase 09-tui-layer]: RunTUI wrapper (D-27): all TUI programs use RunTUI for panic-safe terminal restore; IsTTY(plainFlag) centralized in internal/tui/tty.go
 - [Phase 09-tui-layer]: Init wizard uses inline rendering (no alt-screen) per D-28; two-screen state machine: screenSelector -> screenPreview
-- [Phase 09-tui-layer]: BuildWithProgress channel adapter: goroutine wraps buildImage, feeds BuildLine to chan for TUI relay without modifying synchronous Build path
-- [Phase 09-tui-layer]: StatusView sequential polling: statusUpdateMsg schedules next tick to prevent overlapping Docker inspect calls (avoids Pitfall 7)
-- [Phase 09-tui-layer]: Restart method added to docker.Manager (Stop+Launch with default opts) for status view hotkey support
+- [Phase 09-tui-layer]: Dual TTY guard (IsTTY + IsOutputTTY) required so zone logs -f | grep error streams plain text (D-20 / Pitfall 3)
+- [Phase 09-tui-layer]: viewport.SetHighlights() with byte-offset ranges used for search highlighting in log viewer (bubbles/v2 built-in API)
+- [Phase 09-tui-layer]: AltScreen = true for log viewer (pager UX); inline rendering for init wizard (D-28)
 
 ### Pending Todos
 
@@ -123,6 +123,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-03T03:14:01.814Z
-Stopped at: Completed 09-tui-layer-02-PLAN.md
+Last session: 2026-04-03T03:11:32.340Z
+Stopped at: Completed 09-tui-layer-03-PLAN.md
 Resume file: None

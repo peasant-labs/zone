@@ -166,8 +166,8 @@ Plans:
 **Plans**: 3 plans
 Plans:
 - [x] 09-01-PLAN.md — Install BubbleTea v2 deps, TTY helper, Init Wizard model, wire cmd/init.go
-- [x] 09-02-PLAN.md — Build Progress model with channel adapter, Status View model, wire cmd/launch.go and cmd/status.go
-- [ ] 09-03-PLAN.md — Log Viewer model with follow mode and search, wire cmd/logs.go
+- [ ] 09-02-PLAN.md — Build Progress model with channel adapter, Status View model, wire cmd/launch.go and cmd/status.go
+- [x] 09-03-PLAN.md — Log Viewer model with follow mode and search, wire cmd/logs.go
 
 ### Phase 10: Network Sandboxing
 **Goal**: Containers running on Linux are network-isolated via host-side iptables rules that survive process crashes and clean up after themselves
