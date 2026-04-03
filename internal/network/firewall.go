@@ -4,6 +4,7 @@ package network
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -208,7 +209,11 @@ func (f *Firewall) StartRefresh(ctx context.Context, cfg *config.NetworkConfig) 
 }
 
 func (f *Firewall) refreshOnce(ctx context.Context, cfg *config.NetworkConfig) error {
+	// Suppress warnings during periodic refresh (already shown at launch time)
+	old := warnWriter
+	warnWriter = io.Discard
 	newRules, err := BuildRuleSet(cfg, f.resolveFn)
+	warnWriter = old
 	if err != nil {
 		return err
 	}
