@@ -182,7 +182,7 @@ Plans:
   6. Stale rules from a previous crashed Zone process are detected and removed on the next startup
 **Plans**: 3 plans
 Plans:
-- [ ] 10-01-PLAN.md — Platform detection, DockerClient.Info(), hostname glob matcher, sentinel errors, tests
+- [x] 10-01-PLAN.md — Platform detection, DockerClient.Info(), hostname glob matcher, sentinel errors, tests
 - [ ] 10-02-PLAN.md — Firewall rule generation (BuildRuleSet), Firewall Apply/Remove, iptables execution, rules cache, tests
 - [ ] 10-03-PLAN.md — Manager integration: setupFirewall in Launch, cleanup in Stop/Destroy, refresh goroutine, stale rule cleanup, proxy auto-allowlisting
 

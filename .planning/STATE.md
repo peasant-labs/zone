@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 10 context gathered
-last_updated: "2026-04-03T03:30:09.803Z"
+stopped_at: Completed 10-network-sandboxing-01-PLAN.md
+last_updated: "2026-04-03T04:24:14.446Z"
 last_activity: 2026-04-03
 progress:
   total_phases: 10
   completed_phases: 8
-  total_plans: 27
-  completed_plans: 26
+  total_plans: 30
+  completed_plans: 27
   percent: 100
 ---
 
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-26)
 
 **Core value:** Run `zone launch` in any repo and get a sandboxed Docker workspace for your LLM coding agent, with zero manual Docker configuration.
-**Current focus:** Phase 09 — tui-layer
+**Current focus:** Phase 10 — network-sandboxing
 
 ## Current Position
 
-Phase: 10
-Plan: Not started
-Status: Executing Phase 09
+Phase: 10 (network-sandboxing) — EXECUTING
+Plan: 2 of 3
+Status: Ready to execute
 Last activity: 2026-04-03
 
 Progress: [██████████] 100%
@@ -64,6 +64,7 @@ Progress: [██████████] 100%
 | Phase 08-cli-commands-dx P01 | 6m | 2 tasks | 9 files |
 | Phase 08-cli-commands-dx P02 | 3m | 2 tasks | 16 files |
 | Phase 08-cli-commands-dx P03 | 13min | 2 tasks | 17 files |
+| Phase 10-network-sandboxing P01 | 2 min | 3 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -101,6 +102,9 @@ Recent decisions affecting current work:
 - [Phase 08]: Applied signal.NotifyContext(SIGNINT,SIGTERM) to all Docker-calling commands and propagated ctx to manager/docker APIs.
 - [Phase 08-cli-commands-dx]: Implemented launch --port/-P by extending LaunchOpts and merging ad-hoc bindings into workspace ports before container creation.
 - [Phase 08-cli-commands-dx]: Added binary-level DX integration tests to lock aliases, help examples, flags, and JSON/scriptability behavior.
+- [Phase 10-network-sandboxing]: Platform detection runs once in Manager construction and stores a Platform snapshot for later firewall lifecycle decisions.
+- [Phase 10-network-sandboxing]: Hostname rules accept only literals and simple single-label globs, while filepath.Match handles actual wildcard matching.
+- [Phase 10-network-sandboxing]: Firewall setup, sudo, and iptables failures all map to exit code 4 with actionable remediation hints.
 
 ### Pending Todos
 
@@ -115,6 +119,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-03T03:30:09.796Z
-Stopped at: Phase 10 context gathered
-Resume file: .planning/phases/10-network-sandboxing/10-CONTEXT.md
+Last session: 2026-04-03T04:24:14.442Z
+Stopped at: Completed 10-network-sandboxing-01-PLAN.md
+Resume file: None
