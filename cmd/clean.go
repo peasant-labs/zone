@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"runtime"
 	"syscall"
 
 	"github.com/peasant-labs/zone/internal/cache"
 	"github.com/peasant-labs/zone/internal/config"
 	"github.com/peasant-labs/zone/internal/docker"
+	"github.com/peasant-labs/zone/internal/network"
 	"github.com/spf13/cobra"
 )
 
@@ -33,6 +35,23 @@ Use --image to also remove the Docker image.`,
 		if pid := cache.ReadLockPID(c.Dir()); pid > 0 {
 			fmt.Fprintf(os.Stderr,
 				"Warning: another zone process (PID %d) may be running. Cleaning anyway.\n", pid)
+		}
+
+		// Attempt firewall cleanup before deleting cache (D-39).
+		// Uses the container hash derived from the repo path and cleans
+		// tagged iptables rules. Best-effort: if sudo/iptables unavailable
+		// or not on Linux, this is silently skipped.
+		if runtime.GOOS == "linux" {
+			containerName := docker.ContainerName(cwd)
+			if len(containerName) >= 16 {
+				containerHash := containerName[len(containerName)-16:]
+				ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+				cleanErr := network.RemoveRulesByHash(ctx, nil, containerHash)
+				cancel()
+				if cleanErr != nil {
+					fmt.Fprintf(os.Stderr, "Warning: could not remove firewall rules: %v\n", cleanErr)
+				}
+			}
 		}
 
 		if err := c.Clean(); err != nil {
