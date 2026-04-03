@@ -102,8 +102,8 @@
 ### TUI
 
 - [x] **TUI-01**: Init wizard with BubbleTea interactive harness selection and config preview
-- [ ] **TUI-02**: Build progress display with Docker build log streaming
-- [ ] **TUI-03**: Status view with live container state, uptime, ports, resources
+- [x] **TUI-02**: Build progress display with Docker build log streaming
+- [x] **TUI-03**: Status view with live container state, uptime, ports, resources
 - [ ] **TUI-04**: Log viewer with follow mode and build log option
 - [x] **TUI-05**: TTY auto-detection: BubbleTea when TTY, plain text when not
 - [x] **TUI-06**: `--plain` flag force-disables TUI even in TTY
@@ -246,8 +246,8 @@
 | NET-11 | Phase 10 | Pending |
 | NET-12 | Phase 10 | Pending |
 | TUI-01 | Phase 9 | Complete |
-| TUI-02 | Phase 9 | Pending |
-| TUI-03 | Phase 9 | Pending |
+| TUI-02 | Phase 9 | Complete |
+| TUI-03 | Phase 9 | Complete |
 | TUI-04 | Phase 9 | Pending |
 | TUI-05 | Phase 9 | Complete |
 | TUI-06 | Phase 9 | Complete |
