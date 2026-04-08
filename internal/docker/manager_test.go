@@ -418,6 +418,23 @@ func TestCreateNetwork(t *testing.T) {
 	assert.Equal(t, "net-abc123", netID)
 }
 
+// TestCreateNetwork_AlreadyExists verifies that createNetwork reuses an existing network.
+func TestCreateNetwork_AlreadyExists(t *testing.T) {
+	mc := &mockClient{
+		networkCreateErr: errors.New("network with name test-network already exists"),
+		networkInspectResp: network.Inspect{
+			ID: "existing-net-789",
+		},
+	}
+	cfg := newDefaultConfig()
+	m, _ := newTestManager(t, mc, cfg)
+
+	netID, err := m.createNetwork(context.Background(), "test-network")
+
+	require.NoError(t, err)
+	assert.Equal(t, "existing-net-789", netID)
+}
+
 // TestRemoveNetwork_NotFound verifies that a "not found" error from NetworkRemove is swallowed.
 func TestRemoveNetwork_NotFound(t *testing.T) {
 	// Use a "not found" error from errdefs
@@ -1045,7 +1062,7 @@ func TestBuildMounts_AuthConfig(t *testing.T) {
 	}
 	require.NotNil(t, authMount, "expected auth config mount with .host suffix")
 	assert.Equal(t, claudeDir, authMount.Source, "source should be expanded ~/.claude")
-	assert.Equal(t, "~/.claude.host", authMount.Target, "target should be ~/.claude.host")
+	assert.Equal(t, "/home/zone/.claude.host", authMount.Target, "target should be absolute container path")
 	assert.True(t, authMount.ReadOnly, "auth config mount should be read-only")
 }
 

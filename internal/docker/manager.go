@@ -265,7 +265,7 @@ func (m *Manager) buildMounts() []mount.Mount {
 				mounts = append(mounts, mount.Mount{
 					Type:     mount.TypeBind,
 					Source:   expanded,
-					Target:   dir + ".host",
+					Target:   containerExpandHome(dir) + ".host",
 					ReadOnly: true,
 				})
 			}
@@ -299,6 +299,16 @@ func expandHome(path string) string {
 			return path
 		}
 		return home + path[1:]
+	}
+	return path
+}
+
+// containerExpandHome replaces a leading "~/" with the container user's home
+// directory (/home/zone). Unlike expandHome which uses the host's home, this
+// produces paths valid inside the container — required for Docker mount targets.
+func containerExpandHome(path string) string {
+	if strings.HasPrefix(path, "~/") {
+		return "/home/zone" + path[1:]
 	}
 	return path
 }

@@ -13,6 +13,7 @@ import (
 )
 
 // createNetwork creates a labeled bridge network for the container.
+// If the network already exists, it reuses it by inspecting and returning the existing ID.
 // Returns the network ID on success.
 func (m *Manager) createNetwork(ctx context.Context, networkName string) (string, error) {
 	resp, err := m.client.NetworkCreate(ctx, networkName, network.CreateOptions{
@@ -23,7 +24,12 @@ func (m *Manager) createNetwork(ctx context.Context, networkName string) (string
 		},
 	})
 	if err != nil {
-		return "", fmt.Errorf("create network %s: %w", networkName, err)
+		// If the network already exists, reuse it.
+		info, inspectErr := m.client.NetworkInspect(ctx, networkName, network.InspectOptions{})
+		if inspectErr != nil {
+			return "", fmt.Errorf("create network %s: %w", networkName, err)
+		}
+		return info.ID, nil
 	}
 	return resp.ID, nil
 }
