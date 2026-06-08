@@ -55,15 +55,12 @@ func TestHarnessRegistryUnknown(t *testing.T) {
 		"expected error to contain 'available:', got: %s", err.Error())
 }
 
-// TestRegistryAllNames verifies all 6 harness names can be constructed via Get().
-// Stub harnesses fail Validate() but should still be constructable in a zero-config sense --
-// actually, stub harnesses ALWAYS fail Validate(). Use direct struct creation instead
-// to verify they all exist and satisfy the interface.
+// TestRegistryAllNames verifies all 6 harness names are registered.
 func TestRegistryAllNames(t *testing.T) {
 	// For registrations that pass Validate(), verify Get() works.
 	// For stubs that always fail Validate(), verify the error is about "not yet implemented"
 	// (not "unknown harness") — they ARE registered.
-	stubs := []string{"gemini-cli", "aider", "codex-cli"}
+	stubs := []string{"gemini-cli", "aider"}
 	for _, name := range stubs {
 		h, err := harness.Get(name, &config.HarnessConfig{})
 		assert.Nil(t, h, "stub harness %q should return nil harness due to Validate() error", name)
@@ -83,6 +80,10 @@ func TestRegistryAllNames(t *testing.T) {
 
 	// claude-code with empty config should succeed
 	h, err = harness.Get("claude-code", &config.HarnessConfig{})
+	require.NoError(t, err)
+	require.NotNil(t, h)
+
+	h, err = harness.Get("codex-cli", &config.HarnessConfig{})
 	require.NoError(t, err)
 	require.NotNil(t, h)
 }

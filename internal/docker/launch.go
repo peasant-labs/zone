@@ -26,7 +26,7 @@ type LaunchOpts struct {
 	// without attaching a TTY. Useful for fire-and-forget agent workflows.
 	Headless bool
 
-	// Prompt is forwarded to the harness via its PromptFlag() when non-empty.
+	// Prompt is forwarded to the harness runtime command when non-empty.
 	Prompt string
 
 	// Rebuild forces a fresh image build regardless of hash state.
@@ -432,13 +432,20 @@ func (m *Manager) listRunningZoneHashes(ctx context.Context) (map[string]bool, e
 }
 
 // harnessCmd builds the full command slice for the harness entrypoint.
-// It retrieves the harness, gets its EntrypointCommand, and appends any
-// prompt flag and extra args from opts.
+// It retrieves the harness, lets command-aware harnesses build their own
+// runtime command, and otherwise appends any prompt flag and extra args.
 func (m *Manager) harnessCmd(opts LaunchOpts) []string {
 	h, err := harness.Get(m.config.Zone.Harness, &m.config.Harness)
 	if err != nil {
 		// Fallback: return minimal shell command if harness lookup fails.
 		return []string{m.config.Zone.Shell}
+	}
+
+	args := append([]string{}, m.config.Harness.ExtraArgs...)
+	args = append(args, opts.HarnessArgs...)
+
+	if runtimeHarness, ok := h.(harness.RuntimeCommandHarness); ok {
+		return runtimeHarness.RuntimeCommand(opts.Prompt, args)
 	}
 
 	cmd := []string{h.EntrypointCommand()}
@@ -447,6 +454,6 @@ func (m *Manager) harnessCmd(opts LaunchOpts) []string {
 		cmd = append(cmd, h.PromptFlag(), opts.Prompt)
 	}
 
-	cmd = append(cmd, opts.HarnessArgs...)
+	cmd = append(cmd, args...)
 	return cmd
 }

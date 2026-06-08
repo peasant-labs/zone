@@ -553,6 +553,7 @@ When set, these are passed as `--build-arg` during Docker build and as environme
 - `node_version` (string, default: "22"), Node.js major version
 
 **opencode:**
+- `skip_permissions` (bool, **default: false**), adds `--dangerously-skip-permissions`
 - `node_version` (string, default: "22")
 
 **gemini-cli:**
@@ -562,6 +563,7 @@ When set, these are passed as `--build-arg` during Docker build and as environme
 - `python_version` (string, default: "3.12")
 
 **codex-cli:**
+- `skip_permissions` (bool, **default: false**), adds `--dangerously-bypass-approvals-and-sandbox`
 - `node_version` (string, default: "22")
 
 **custom:**

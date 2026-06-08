@@ -29,6 +29,14 @@ func TestOpenCodeHarnessValidates(t *testing.T) {
 	assert.Len(t, h.InstallCommands(), 2)
 }
 
+func TestOpenCodeHarnessAllowsSkipPermissions(t *testing.T) {
+	h, err := harness.Get("opencode", &config.HarnessConfig{
+		SkipPermissions: boolPtr(true),
+	})
+	require.NoError(t, err)
+	assert.Equal(t, "opencode", h.Name())
+}
+
 func TestStubHarnessValidateGeminiCLI(t *testing.T) {
 	_, err := harness.Get("gemini-cli", &config.HarnessConfig{})
 	require.Error(t, err)
@@ -43,11 +51,16 @@ func TestStubHarnessValidateAider(t *testing.T) {
 	assert.ErrorContains(t, err, `use harness = "custom" with install_commands and entrypoint_command to configure it manually`)
 }
 
-func TestStubHarnessValidateCodexCLI(t *testing.T) {
-	_, err := harness.Get("codex-cli", &config.HarnessConfig{})
-	require.Error(t, err)
-	assert.ErrorContains(t, err, `the "codex-cli" harness is not yet fully implemented`)
-	assert.ErrorContains(t, err, `use harness = "custom" with install_commands and entrypoint_command to configure it manually`)
+func TestCodexCLIHarnessValidates(t *testing.T) {
+	h, err := harness.Get("codex-cli", &config.HarnessConfig{})
+	require.NoError(t, err)
+	assert.Equal(t, "codex-cli", h.Name())
+	assert.Equal(t, "codex", h.EntrypointCommand())
+	assert.Equal(t, "codex --version", h.HealthCheck())
+	assert.Equal(t, "~/.codex", h.HomeConfigDir())
+	assert.True(t, h.NeedsNode())
+	assert.False(t, h.NeedsPython())
+	assert.Equal(t, []string{"npm install -g @openai/codex"}, h.InstallCommands())
 }
 
 func TestStubHarnessNames(t *testing.T) {
@@ -61,7 +74,6 @@ func TestStubHarnessNames(t *testing.T) {
 		// after Get fails, name is still embedded in error.
 		{"gemini-cli", "gemini-cli"},
 		{"aider", "aider"},
-		{"codex-cli", "codex-cli"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -89,9 +101,9 @@ func TestStubNeedsNode(t *testing.T) {
 	// The NeedsNode values for stubs are indirectly validated via build correctness.
 	// Direct test: construct raw and call — but that requires exported types.
 	// Best we can do: verify the spec-prescribed values are documented in the test.
-	// opencode = false, aider = false, gemini-cli = false, codex-cli = false.
-	// This matches the plan spec for each stub.
-	t.Log("opencode.NeedsNode=false, aider.NeedsNode=false, gemini-cli.NeedsNode=false, codex-cli.NeedsNode=false")
+	// opencode = false, aider = false, gemini-cli = false.
+	// codex-cli is now implemented and requires Node for npm installation.
+	t.Log("opencode.NeedsNode=false, aider.NeedsNode=false, gemini-cli.NeedsNode=false")
 }
 
 // ---------------------------------------------------------------------------

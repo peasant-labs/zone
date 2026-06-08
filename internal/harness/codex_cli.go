@@ -1,4 +1,4 @@
-// codex_cli.go implements the codex-cli stub harness.
+// codex_cli.go implements the codex-cli harness.
 package harness
 
 import (
@@ -7,32 +7,56 @@ import (
 	"github.com/peasant-labs/zone/internal/config"
 )
 
-// CodexCLI is a stub harness for the OpenAI Codex CLI AI tool.
-// Validate() always fails with a "not yet implemented" error.
-// Cross-harness keys are rejected with specific errors before the stub error.
+const codexDangerouslyBypassFlag = "--dangerously-bypass-approvals-and-sandbox"
+
+// CodexCLI implements the Harness interface for the OpenAI Codex CLI AI tool.
 type CodexCLI struct {
 	BaseHarness
 	config *config.HarnessConfig
 }
 
-func (c *CodexCLI) Name() string                 { return "codex-cli" }
-func (c *CodexCLI) InstallCommands() []string     { return nil }
-func (c *CodexCLI) EntrypointCommand() string     { return "" }
-func (c *CodexCLI) RequiredEnvVars() []string     { return nil }
-func (c *CodexCLI) HomeConfigDir() string         { return "" }
-func (c *CodexCLI) DefaultAptPackages() []string  { return nil }
-func (c *CodexCLI) DefaultNpmPackages() []string  { return nil }
-func (c *CodexCLI) DefaultPipPackages() []string  { return nil }
-func (c *CodexCLI) NeedsNode() bool               { return false }
-func (c *CodexCLI) NeedsPython() bool             { return false }
+func (c *CodexCLI) Name() string { return "codex-cli" }
 
-// Validate checks for cross-harness keys first, then returns the stub error.
-func (c *CodexCLI) Validate() error {
-	// Reject claude-code-specific keys
-	if c.config.SkipPermissions != nil && *c.config.SkipPermissions {
-		return fmt.Errorf("harness %q does not support key %q (that key is specific to %q)",
-			"codex-cli", "skip_permissions", "claude-code")
+func (c *CodexCLI) InstallCommands() []string {
+	pkg := "@openai/codex"
+	if c.config.Version != "" {
+		pkg += "@" + c.config.Version
 	}
+	return []string{"npm install -g " + pkg}
+}
+
+func (c *CodexCLI) HealthCheck() string       { return "codex --version" }
+func (c *CodexCLI) EntrypointCommand() string { return "codex" }
+func (c *CodexCLI) RequiredEnvVars() []string { return nil }
+func (c *CodexCLI) HomeConfigDir() string     { return "~/.codex" }
+func (c *CodexCLI) DefaultAptPackages() []string {
+	return nil
+}
+func (c *CodexCLI) DefaultNpmPackages() []string { return nil }
+func (c *CodexCLI) DefaultPipPackages() []string { return nil }
+func (c *CodexCLI) NeedsNode() bool              { return true }
+func (c *CodexCLI) NeedsPython() bool            { return false }
+
+// RuntimeCommand uses `codex` for interactive sessions and `codex exec` for
+// prompt-driven noninteractive runs.
+func (c *CodexCLI) RuntimeCommand(prompt string, args []string) []string {
+	cmd := []string{"codex"}
+	if prompt != "" {
+		cmd = append(cmd, "exec")
+	}
+	if c.config.SkipPermissions != nil && *c.config.SkipPermissions {
+		cmd = append(cmd, codexDangerouslyBypassFlag)
+	}
+	cmd = append(cmd, args...)
+	if prompt != "" {
+		cmd = append(cmd, prompt)
+	}
+	return cmd
+}
+
+// Validate rejects HarnessConfig fields that belong to other harnesses.
+// Common fields (version, extra_args, node_version, skip_permissions) are allowed.
+func (c *CodexCLI) Validate() error {
 	// Reject aider-specific keys
 	if c.config.PythonVersion != "" {
 		return fmt.Errorf("harness %q does not support key %q (that key is specific to %q)",
@@ -67,9 +91,5 @@ func (c *CodexCLI) Validate() error {
 		return fmt.Errorf("harness %q does not support key %q (that key is specific to %q)",
 			"codex-cli", "shell_rc", "custom")
 	}
-	return fmt.Errorf(
-		"the %q harness is not yet fully implemented; use harness = \"custom\" "+
-			"with install_commands and entrypoint_command to configure it manually",
-		c.Name(),
-	)
+	return nil
 }

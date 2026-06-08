@@ -10,7 +10,7 @@ type HarnessConfig struct {
 	Version   string   `toml:"version"`
 	ExtraArgs []string `toml:"extra_args"`
 
-	// Claude Code specific
+	// Harness-specific dangerous permission bypass for supported harnesses.
 	SkipPermissions *bool  `toml:"skip_permissions"`
 	NodeVersion     string `toml:"node_version"`
 

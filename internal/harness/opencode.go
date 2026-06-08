@@ -7,6 +7,8 @@ import (
 	"github.com/peasant-labs/zone/internal/config"
 )
 
+const opencodeDangerouslySkipPermissionsFlag = "--dangerously-skip-permissions"
+
 // OpenCode implements the Harness interface for the opencode AI tool.
 type OpenCode struct {
 	BaseHarness
@@ -23,12 +25,12 @@ func (o *OpenCode) InstallCommands() []string {
 	}
 }
 
-func (o *OpenCode) HealthCheck() string       { return "opencode --version" }
-func (o *OpenCode) EntrypointCommand() string  { return "opencode" }
-func (o *OpenCode) RequiredEnvVars() []string  { return nil }
-func (o *OpenCode) HomeConfigDir() string      { return "~/.opencode" }
-func (o *OpenCode) NeedsNode() bool            { return false }
-func (o *OpenCode) NeedsPython() bool          { return false }
+func (o *OpenCode) HealthCheck() string          { return "opencode --version" }
+func (o *OpenCode) EntrypointCommand() string    { return "opencode" }
+func (o *OpenCode) RequiredEnvVars() []string    { return nil }
+func (o *OpenCode) HomeConfigDir() string        { return "~/.opencode" }
+func (o *OpenCode) NeedsNode() bool              { return false }
+func (o *OpenCode) NeedsPython() bool            { return false }
 func (o *OpenCode) DefaultAptPackages() []string { return nil }
 func (o *OpenCode) DefaultNpmPackages() []string { return nil }
 func (o *OpenCode) DefaultPipPackages() []string { return nil }
@@ -37,12 +39,22 @@ func (o *OpenCode) WelcomeMessage() string {
 	return "Zone workspace: opencode"
 }
 
+// RuntimeCommand uses `opencode` for interactive sessions and `--prompt` for
+// prompt-driven noninteractive runs.
+func (o *OpenCode) RuntimeCommand(prompt string, args []string) []string {
+	cmd := []string{"opencode"}
+	if o.config.SkipPermissions != nil && *o.config.SkipPermissions {
+		cmd = append(cmd, opencodeDangerouslySkipPermissionsFlag)
+	}
+	cmd = append(cmd, args...)
+	if prompt != "" {
+		cmd = append(cmd, "--prompt", prompt)
+	}
+	return cmd
+}
+
 // Validate rejects HarnessConfig fields that belong to other harnesses.
 func (o *OpenCode) Validate() error {
-	if o.config.SkipPermissions != nil && *o.config.SkipPermissions {
-		return fmt.Errorf("harness %q does not support key %q (that key is specific to %q)",
-			"opencode", "skip_permissions", "claude-code")
-	}
 	if o.config.PythonVersion != "" {
 		return fmt.Errorf("harness %q does not support key %q (that key is specific to %q)",
 			"opencode", "python_version", "aider")

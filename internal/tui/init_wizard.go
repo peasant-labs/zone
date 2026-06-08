@@ -61,7 +61,7 @@ func NewInitWizard(detectedHarnesses map[string]bool) InitWizard {
 		harnessItem{"opencode", "OpenCode", detectedHarnesses["opencode"]},
 		harnessItem{"aider", "Aider (stub)", detectedHarnesses["aider"]},
 		harnessItem{"gemini-cli", "Google Gemini CLI (stub)", detectedHarnesses["gemini-cli"]},
-		harnessItem{"codex-cli", "OpenAI Codex CLI (stub)", detectedHarnesses["codex-cli"]},
+		harnessItem{"codex-cli", "OpenAI Codex CLI", detectedHarnesses["codex-cli"]},
 		harnessItem{"custom", "Custom harness", false},
 	}
 

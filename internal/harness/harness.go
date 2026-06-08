@@ -48,12 +48,19 @@ type Harness interface {
 	Validate() error
 }
 
+// RuntimeCommandHarness is an optional extension for harnesses whose prompt
+// invocation cannot be represented as a single PromptFlag appended to the
+// interactive command.
+type RuntimeCommandHarness interface {
+	RuntimeCommand(prompt string, args []string) []string
+}
+
 // BaseHarness is an empty struct that provides no-op default implementations for
 // the 9 optional Harness methods. Concrete harnesses embed BaseHarness and override
 // only the methods they need to customise.
 type BaseHarness struct{}
 
-func (b BaseHarness) Version() string              { return "" }
+func (b BaseHarness) Version() string               { return "" }
 func (b BaseHarness) PostInstallCommands() []string { return nil }
 func (b BaseHarness) HealthCheck() string           { return "" }
 func (b BaseHarness) PromptFlag() string            { return "" }
@@ -97,4 +104,3 @@ func availableNames() []string {
 	sort.Strings(names)
 	return names
 }
-

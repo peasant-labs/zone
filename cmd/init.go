@@ -212,7 +212,7 @@ harness = %q
 
 # ---- Harness-specific settings ----
 # [harness]
-# skip_permissions = false
+# skip_permissions = false # dangerous permission bypass for supported harnesses
 # api_key_env = "ANTHROPIC_API_KEY"
 # model = ""
 `, harness)

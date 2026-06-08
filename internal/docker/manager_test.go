@@ -193,6 +193,8 @@ func newDefaultConfig() *config.MergedConfig {
 	}
 }
 
+func boolPtr(b bool) *bool { return &b }
+
 // TestNewManagerWithClient verifies that newManagerWithClient populates all Manager fields.
 func TestNewManagerWithClient(t *testing.T) {
 	mc := &mockClient{}
@@ -772,6 +774,109 @@ func TestQuickstartWriteZoneTomlCreatesAgentSkill(t *testing.T) {
 	require.NoError(t, err)
 	assert.Contains(t, string(data), "Zone Workspace Dependencies")
 	assert.Contains(t, string(data), "`zone.toml`")
+}
+
+func TestHarnessCmdCodexInteractive(t *testing.T) {
+	cfg := newDefaultConfig()
+	cfg.Zone.Harness = "codex-cli"
+	m, _ := newTestManager(t, &mockClient{}, cfg)
+
+	got := m.harnessCmd(LaunchOpts{})
+
+	assert.Equal(t, []string{"codex"}, got)
+}
+
+func TestHarnessCmdCodexPromptUsesExec(t *testing.T) {
+	cfg := newDefaultConfig()
+	cfg.Zone.Harness = "codex-cli"
+	m, _ := newTestManager(t, &mockClient{}, cfg)
+
+	got := m.harnessCmd(LaunchOpts{Prompt: "fix the tests"})
+
+	assert.Equal(t, []string{"codex", "exec", "fix the tests"}, got)
+}
+
+func TestHarnessCmdCodexDangerouslyBypassApprovalsAndSandbox(t *testing.T) {
+	cfg := newDefaultConfig()
+	cfg.Zone.Harness = "codex-cli"
+	cfg.Harness.SkipPermissions = boolPtr(true)
+	m, _ := newTestManager(t, &mockClient{}, cfg)
+
+	got := m.harnessCmd(LaunchOpts{
+		Prompt:      "fix the tests",
+		HarnessArgs: []string{"--model", "gpt-5.3-codex"},
+	})
+
+	assert.Equal(t, []string{
+		"codex",
+		"exec",
+		"--dangerously-bypass-approvals-and-sandbox",
+		"--model",
+		"gpt-5.3-codex",
+		"fix the tests",
+	}, got)
+}
+
+func TestHarnessCmdOpenCodeInteractive(t *testing.T) {
+	cfg := newDefaultConfig()
+	cfg.Zone.Harness = "opencode"
+	m, _ := newTestManager(t, &mockClient{}, cfg)
+
+	got := m.harnessCmd(LaunchOpts{})
+
+	assert.Equal(t, []string{"opencode"}, got)
+}
+
+func TestHarnessCmdOpenCodePromptUsesPromptFlag(t *testing.T) {
+	cfg := newDefaultConfig()
+	cfg.Zone.Harness = "opencode"
+	m, _ := newTestManager(t, &mockClient{}, cfg)
+
+	got := m.harnessCmd(LaunchOpts{Prompt: "fix the tests"})
+
+	assert.Equal(t, []string{"opencode", "--prompt", "fix the tests"}, got)
+}
+
+func TestHarnessCmdOpenCodeDangerouslySkipPermissions(t *testing.T) {
+	cfg := newDefaultConfig()
+	cfg.Zone.Harness = "opencode"
+	cfg.Harness.SkipPermissions = boolPtr(true)
+	m, _ := newTestManager(t, &mockClient{}, cfg)
+
+	got := m.harnessCmd(LaunchOpts{
+		Prompt:      "fix the tests",
+		HarnessArgs: []string{"--model", "anthropic/claude-sonnet-4-20250514"},
+	})
+
+	assert.Equal(t, []string{
+		"opencode",
+		"--dangerously-skip-permissions",
+		"--model",
+		"anthropic/claude-sonnet-4-20250514",
+		"--prompt",
+		"fix the tests",
+	}, got)
+}
+
+func TestHarnessCmdAppendsConfiguredExtraArgsBeforeCLIArgs(t *testing.T) {
+	cfg := newDefaultConfig()
+	cfg.Zone.Harness = "claude-code"
+	cfg.Harness.ExtraArgs = []string{"--verbose"}
+	m, _ := newTestManager(t, &mockClient{}, cfg)
+
+	got := m.harnessCmd(LaunchOpts{
+		Prompt:      "fix the tests",
+		HarnessArgs: []string{"--model", "sonnet"},
+	})
+
+	assert.Equal(t, []string{
+		"claude",
+		"-p",
+		"fix the tests",
+		"--verbose",
+		"--model",
+		"sonnet",
+	}, got)
 }
 
 // computeTestHash is a helper to get the current config hash for a manager.
