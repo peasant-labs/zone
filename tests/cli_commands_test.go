@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/peasant-labs/zone/internal/scaffold"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -26,6 +27,11 @@ func TestInitCreatesZoneToml(t *testing.T) {
 	require.NoError(t, err, "zone.toml not created")
 	assert.Contains(t, string(data), `harness = "claude-code"`)
 	assert.Contains(t, string(data), "version = 1")
+
+	skillData, err := os.ReadFile(filepath.Join(dir, scaffold.AgentSkillsDir, scaffold.AgentZoneSkillFile))
+	require.NoError(t, err, "agent skill not created")
+	assert.Contains(t, string(skillData), "Zone Workspace Dependencies")
+	assert.Contains(t, string(skillData), "`zone.toml`")
 }
 
 func TestInitExistingZoneToml(t *testing.T) {

@@ -12,6 +12,7 @@ import (
 	"github.com/peasant-labs/zone/internal/cache"
 	"github.com/peasant-labs/zone/internal/config"
 	"github.com/peasant-labs/zone/internal/docker"
+	"github.com/peasant-labs/zone/internal/scaffold"
 	"github.com/peasant-labs/zone/internal/tui"
 	"github.com/spf13/cobra"
 )
@@ -76,6 +77,9 @@ container instead of creating a duplicate.`,
 					content := generateInitTemplate(harnessName)
 					if writeErr := os.WriteFile(tomlPath, []byte(content), 0644); writeErr != nil {
 						return fmt.Errorf("write zone.toml: %w", writeErr)
+					}
+					if skillErr := scaffold.EnsureAgentSkill(cwd); skillErr != nil {
+						return fmt.Errorf("create agent skill: %w", skillErr)
 					}
 				} else {
 					return fmt.Errorf("no zone.toml found. Run 'zone init --harness <name>' or 'zone launch --harness <name>'")

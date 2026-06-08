@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/peasant-labs/zone/internal/cache"
+	"github.com/peasant-labs/zone/internal/scaffold"
 	"github.com/peasant-labs/zone/internal/tui"
 	"github.com/spf13/cobra"
 )
@@ -77,6 +78,10 @@ generated config without editing the file afterward.`,
 
 		if err := os.WriteFile(tomlPath, []byte(content), 0644); err != nil {
 			return fmt.Errorf("write zone.toml: %w", err)
+		}
+
+		if err := scaffold.EnsureAgentSkill(cwd); err != nil {
+			return fmt.Errorf("create agent skill: %w", err)
 		}
 
 		if err := cache.EnsureGitignore(cwd); err != nil {

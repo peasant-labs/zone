@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 
 	"github.com/peasant-labs/zone/internal/cache"
+	"github.com/peasant-labs/zone/internal/scaffold"
 )
 
 // minimalZoneTomlTemplate is the template for the generated zone.toml file.
@@ -50,6 +51,9 @@ func QuickstartWriteZoneToml(repoDir, harnessName string) error {
 	content := generateMinimalZoneToml(harnessName)
 	if err := os.WriteFile(tomlPath, []byte(content), 0644); err != nil {
 		return fmt.Errorf("write zone.toml: %w", err)
+	}
+	if err := scaffold.EnsureAgentSkill(repoDir); err != nil {
+		return fmt.Errorf("create agent skill: %w", err)
 	}
 	if err := cache.EnsureGitignore(repoDir); err != nil {
 		return fmt.Errorf("update gitignore: %w", err)

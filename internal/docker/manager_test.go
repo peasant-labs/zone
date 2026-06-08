@@ -31,6 +31,7 @@ import (
 	"github.com/peasant-labs/zone/internal/cache"
 	"github.com/peasant-labs/zone/internal/config"
 	networkpkg "github.com/peasant-labs/zone/internal/network"
+	"github.com/peasant-labs/zone/internal/scaffold"
 )
 
 // mockClient is a configurable mock implementation of DockerClient.
@@ -760,6 +761,17 @@ func TestGenerateMinimalZoneToml(t *testing.T) {
 	assert.Contains(t, result, "version = 1")
 	assert.Contains(t, result, `harness = "claude-code"`)
 	assert.Contains(t, result, "# Uncomment to customize:")
+}
+
+func TestQuickstartWriteZoneTomlCreatesAgentSkill(t *testing.T) {
+	dir := t.TempDir()
+
+	require.NoError(t, QuickstartWriteZoneToml(dir, "codex-cli"))
+
+	data, err := os.ReadFile(filepath.Join(dir, scaffold.AgentSkillsDir, scaffold.AgentZoneSkillFile))
+	require.NoError(t, err)
+	assert.Contains(t, string(data), "Zone Workspace Dependencies")
+	assert.Contains(t, string(data), "`zone.toml`")
 }
 
 // computeTestHash is a helper to get the current config hash for a manager.
