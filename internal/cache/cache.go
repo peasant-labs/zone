@@ -148,7 +148,7 @@ func (c *Cache) CreateBuildLog(w io.Writer, configHash, version string) (io.Writ
 	}
 
 	header := fmt.Sprintf("# zone build | %s | config hash: %s | zone %s\n",
-		time.Now().Format(time.RFC3339), configHash, version)
+		time.Now().UTC().Format(time.RFC3339), configHash, version)
 	_, _ = f.WriteString(header)
 
 	tee := io.MultiWriter(w, f)

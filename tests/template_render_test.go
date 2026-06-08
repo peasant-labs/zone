@@ -52,7 +52,12 @@ func TestRenderDockerfileNonRootUser(t *testing.T) {
 	}
 	result, err := docker.RenderDockerfile(data, "1.0.0")
 	require.NoError(t, err)
-	assert.Contains(t, result, "useradd -m -s /bin/bash -u ${HOST_UID} zone", "Must create zone user with correct shell")
+	assert.Contains(t, result, `existing_user="$(getent passwd "${HOST_UID}" | cut -d: -f1 || true)"`,
+		"Must detect an existing user with the host UID")
+	assert.Contains(t, result, `usermod -l zone "${existing_user}"`,
+		"Must reuse an existing host-UID user as zone")
+	assert.Contains(t, result, `useradd -m -s /bin/bash -u "${HOST_UID}" zone`,
+		"Must create zone user when the host UID is unused")
 	assert.Contains(t, result, "USER zone", "Must switch to zone user")
 }
 

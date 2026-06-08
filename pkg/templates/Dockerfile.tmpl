@@ -73,8 +73,23 @@ RUN apt-get update && apt-get install -y --no-install-recommends zsh \
 {{- if eq .HostUID 0 }}
 # Running as root (CI environment) -- skip user creation
 {{- else }}
-RUN useradd -m -s /bin/{{ .Shell }} -u ${HOST_UID} zone \
-    && echo "zone ALL=(ALL) NOPASSWD: /usr/bin/apt-get, /usr/bin/apt, /usr/bin/pip*, /usr/bin/npm, /usr/local/bin/npm" >> /etc/sudoers
+RUN set -eux; \
+    existing_user="$(getent passwd "${HOST_UID}" | cut -d: -f1 || true)"; \
+    if [ -n "${existing_user}" ]; then \
+        if [ "${existing_user}" != "zone" ]; then \
+            if getent passwd zone >/dev/null; then \
+                usermod -l zone-conflict -d /home/zone-conflict -m zone; \
+            fi; \
+            usermod -l zone "${existing_user}"; \
+        fi; \
+        usermod -d /home/zone -m zone; \
+        usermod -s /bin/{{ .Shell }} zone; \
+    elif getent passwd zone >/dev/null; then \
+        usermod -u "${HOST_UID}" -d /home/zone -m -s /bin/{{ .Shell }} zone; \
+    else \
+        useradd -m -s /bin/{{ .Shell }} -u "${HOST_UID}" zone; \
+    fi; \
+    echo "zone ALL=(ALL) NOPASSWD: /usr/bin/apt-get, /usr/bin/apt, /usr/bin/pip*, /usr/bin/npm, /usr/local/bin/npm" >> /etc/sudoers
 {{- end }}
 
 {{- if .MacOSUsername }}

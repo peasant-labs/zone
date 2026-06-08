@@ -98,8 +98,11 @@ type mountRule struct {
 // Patterns starting with "/." are expanded relative to $HOME.
 var dangerousMountBlocklist = []mountRule{
 	{pattern: "/var/run/docker.sock", reason: "Docker socket mount allows container escape"},
+	{pattern: "/run/docker.sock", reason: "Docker socket mount allows container escape"},
 	{pattern: "/var/run/podman/", reason: "Container runtime socket mount"},
+	{pattern: "/run/podman/", reason: "Container runtime socket mount"},
 	{pattern: "/var/run/containerd/", reason: "Container runtime socket mount"},
+	{pattern: "/run/containerd/", reason: "Container runtime socket mount"},
 	{pattern: "/proc", reason: "Kernel interface mount"},
 	{pattern: "/sys", reason: "Kernel interface mount"},
 	{pattern: "/dev", reason: "Device mount"},
