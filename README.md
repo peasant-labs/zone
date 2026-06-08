@@ -2,6 +2,12 @@
 
 Zone builds and runs Dockerized workspaces for agent harnesses.
 
+To build:
+
+```sh
+make
+```
+
 ## Local Binary Alias
 
 If you have built or checked out the local binary at `bin/zone`, you can make the `zone` command point at it with a shell alias.
