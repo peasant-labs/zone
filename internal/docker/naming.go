@@ -28,10 +28,12 @@ func NetworkName(repoPath string) string {
 }
 
 // ContainerLabels returns Docker labels applied to every zone container for discovery.
-func ContainerLabels(repoPath, harness string) map[string]string {
+func ContainerLabels(repoPath, harness, configHash, imageID string) map[string]string {
 	return map[string]string{
-		"com.zone.managed":   "true",
-		"com.zone.repo-path": repoPath,
-		"com.zone.harness":   harness,
+		"com.zone.managed":     "true",
+		"com.zone.repo-path":   repoPath,
+		"com.zone.harness":     harness,
+		"com.zone.config-hash": configHash,
+		"com.zone.image-id":    imageID,
 	}
 }

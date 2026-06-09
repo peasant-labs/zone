@@ -99,6 +99,10 @@ func (m *Manager) Build(ctx context.Context, noCache bool) (string, error) {
 func (m *Manager) createContainer(ctx context.Context, imageID string) (string, error) {
 	containerName := ContainerName(m.repoDir)
 	networkName := NetworkName(m.repoDir)
+	configHash, err := cache.ComputeHash(m.config, m.version)
+	if err != nil {
+		return "", fmt.Errorf("compute config hash: %w", err)
+	}
 
 	// Create the dedicated bridge network
 	netID, err := m.createNetwork(ctx, networkName)
@@ -169,7 +173,7 @@ func (m *Manager) createContainer(ctx context.Context, imageID string) (string, 
 
 	cfg := &container.Config{
 		Image:        imageID,
-		Labels:       ContainerLabels(m.repoDir, m.config.Zone.Harness),
+		Labels:       ContainerLabels(m.repoDir, m.config.Zone.Harness, configHash, imageID),
 		Env:          envVars,
 		ExposedPorts: exposedPorts,
 	}

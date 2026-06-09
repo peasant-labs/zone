@@ -235,17 +235,19 @@ func (m *Manager) inspectContainerState(ctx context.Context, containerID string)
 }
 
 // handleRunning handles the case where the cached container is already running.
-// It compares the current config hash to the running container's hash.
-// If they differ, it prints a warning but does NOT stop the container.
+// It compares the current config/image metadata to the running container's labels.
+// If they differ, it refuses to attach so Zone does not exec a harness command
+// into an incompatible older container.
 // The lock is released before attach.
 func (m *Manager) handleRunning(ctx context.Context, info *container.InspectResponse, lock *cache.Lock, opts LaunchOpts) error {
-	changed, err := m.checkConfigHash()
+	changed, reason, err := m.runningContainerChanged(info)
 	if err != nil {
 		lock.Release()
 		return err
 	}
 	if changed {
-		fmt.Fprintf(os.Stderr, "Config has changed since this container was started. Run 'zone restart --rebuild' to apply changes.\n")
+		lock.Release()
+		return fmt.Errorf("running container is stale (%s). Run 'zone restart --rebuild' to replace it", reason)
 	}
 
 	containerID := info.ID
@@ -258,18 +260,46 @@ func (m *Manager) handleRunning(ctx context.Context, info *container.InspectResp
 	return m.attachFn(containerID, m.harnessCmd(opts), false)
 }
 
-// checkConfigHash computes the current config hash and compares it to the
-// cached hash. Returns (true, nil) when the hashes differ (config is stale).
-func (m *Manager) checkConfigHash() (changed bool, err error) {
+// runningContainerChanged compares the current config/image metadata to the
+// metadata recorded on a running container.
+func (m *Manager) runningContainerChanged(info *container.InspectResponse) (changed bool, reason string, err error) {
 	current, err := cache.ComputeHash(m.config, m.version)
 	if err != nil {
-		return false, fmt.Errorf("compute config hash: %w", err)
+		return false, "", fmt.Errorf("compute config hash: %w", err)
 	}
+
+	labels := map[string]string{}
+	if info.Config != nil && info.Config.Labels != nil {
+		labels = info.Config.Labels
+	}
+
+	if containerHash := labels["com.zone.config-hash"]; containerHash != "" {
+		if containerHash != current {
+			return true, "config changed since the container was created", nil
+		}
+		return false, "", nil
+	}
+
+	if containerHarness := labels["com.zone.harness"]; containerHarness != "" && containerHarness != m.config.Zone.Harness {
+		return true, fmt.Sprintf("harness changed from %s to %s", containerHarness, m.config.Zone.Harness), nil
+	}
+
+	imageID, err := m.cache.ImageID()
+	if err != nil {
+		return false, "", fmt.Errorf("read cached image ID: %w", err)
+	}
+	if imageID != "" && info.Image != "" && info.Image != imageID {
+		return true, "image changed since the container was created", nil
+	}
+
 	cached, err := m.cache.ConfigHash()
 	if err != nil {
-		return false, fmt.Errorf("read cached config hash: %w", err)
+		return false, "", fmt.Errorf("read cached config hash: %w", err)
 	}
-	return current != cached, nil
+	if current != cached {
+		return true, "config hash differs from cache", nil
+	}
+	return false, "", nil
 }
 
 // cleanStaleCache clears the container_id from cache, attempts to remove any

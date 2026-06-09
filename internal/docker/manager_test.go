@@ -554,6 +554,11 @@ func makeLaunchMock(t *testing.T, status string, oomKilled bool) (*mockClient, *
 
 	// Prime cache so EnsureDir works for lock
 	require.NoError(t, m.cache.EnsureDir())
+	hash, err := computeTestHash(m)
+	require.NoError(t, err)
+	mc.containerInspectResp.Config = &container.Config{
+		Labels: ContainerLabels(m.repoDir, m.config.Zone.Harness, hash, "sha256:testimage123"),
+	}
 
 	return mc, m, tmpDir
 }
@@ -598,29 +603,35 @@ func TestLaunchStateMachine_Running(t *testing.T) {
 	assert.False(t, mc.startCalled, "ContainerStart should NOT be called for running container")
 }
 
-// TestLaunchStateMachine_RunningStaleConfig verifies warning printed when running container
-// has a different config hash than the current one.
+// TestLaunchStateMachine_RunningStaleConfig verifies launch refuses to attach
+// when a running container has a different config hash than the current one.
 func TestLaunchStateMachine_RunningStaleConfig(t *testing.T) {
 	_, m, _ := makeLaunchMock(t, "running", false)
 
 	require.NoError(t, m.cache.SetContainerID("container-abc"))
-	// Write a deliberately different (stale) hash
-	require.NoError(t, m.cache.SetConfigHash("stale-hash-000"))
-
-	// Capture stderr
-	oldStderr := os.Stderr
-	r, w, _ := os.Pipe()
-	os.Stderr = w
+	m.client.(*mockClient).containerInspectResp.Config.Labels["com.zone.config-hash"] = "stale-hash-000"
 
 	err := m.Launch(context.Background(), LaunchOpts{})
 
-	w.Close()
-	os.Stderr = oldStderr
-	var buf bytes.Buffer
-	_, _ = io.Copy(&buf, r)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "running container is stale")
+	assert.Contains(t, err.Error(), "zone restart --rebuild")
+}
 
-	require.NoError(t, err)
-	assert.Contains(t, buf.String(), "Config has changed")
+// TestLaunchStateMachine_RunningStaleHarness verifies launch refuses to exec
+// the current harness into an older running container for a different harness.
+func TestLaunchStateMachine_RunningStaleHarness(t *testing.T) {
+	_, m, _ := makeLaunchMock(t, "running", false)
+
+	require.NoError(t, m.cache.SetContainerID("container-abc"))
+	labels := m.client.(*mockClient).containerInspectResp.Config.Labels
+	delete(labels, "com.zone.config-hash")
+	labels["com.zone.harness"] = "codex-cli"
+
+	err := m.Launch(context.Background(), LaunchOpts{})
+
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "harness changed from codex-cli to claude-code")
 }
 
 // TestLaunchStateMachine_Paused verifies that a paused container is unpaused then attached.

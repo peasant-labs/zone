@@ -55,11 +55,13 @@ func TestNetworkNameSuffix(t *testing.T) {
 }
 
 func TestContainerLabels(t *testing.T) {
-	labels := docker.ContainerLabels("/home/user/myrepo", "claude-code")
+	labels := docker.ContainerLabels("/home/user/myrepo", "claude-code", "hash123", "sha256:image123")
 	assert.Equal(t, "true", labels["com.zone.managed"])
 	assert.Equal(t, "/home/user/myrepo", labels["com.zone.repo-path"])
 	assert.Equal(t, "claude-code", labels["com.zone.harness"])
-	assert.Equal(t, 3, len(labels), "Must have exactly 3 labels")
+	assert.Equal(t, "hash123", labels["com.zone.config-hash"])
+	assert.Equal(t, "sha256:image123", labels["com.zone.image-id"])
+	assert.Equal(t, 5, len(labels), "Must have exactly 5 labels")
 }
 
 func TestContainerNameUsesAbsPath(t *testing.T) {
