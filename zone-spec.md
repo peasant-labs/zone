@@ -279,6 +279,7 @@ npm = []
 memory = ""                       # Docker memory limit (e.g., "8g"). Empty = no limit.
 cpus = ""                         # Docker CPU limit (e.g., "4"). Empty = no limit.
 pids_limit = 512                  # Max processes (fork bomb protection)
+gpus = ""                         # GPU passthrough: "all", count ("2"), or "device=0,1". Empty = no GPU. Requires NVIDIA Container Toolkit.
 
 [network]
 mode = "none"                     # "whitelist" | "blocklist" | "none"
@@ -353,6 +354,7 @@ npm = []
 memory = ""                       # e.g., "8g" -- overrides global
 cpus = ""                         # e.g., "4" -- overrides global
 pids_limit = 512                  # max processes
+gpus = ""                         # e.g., "all" / "2" / "device=0,1" -- overrides global
 
 [network]
 mode = "none"                     # overrides global if set

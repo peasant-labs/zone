@@ -266,6 +266,9 @@ func buildResourcesSection(a *config.AnnotatedConfig) []string {
 	if a.PidsLimit.Value != 0 {
 		lines = append(lines, fmt.Sprintf("pids_limit = %d # %s", a.PidsLimit.Value, a.PidsLimit.Source))
 	}
+	if a.Gpus.Value != "" {
+		lines = append(lines, fmt.Sprintf("gpus = %q # %s", a.Gpus.Value, a.Gpus.Source))
+	}
 	return lines
 }
 
@@ -435,6 +438,7 @@ func renderJSON(a *config.AnnotatedConfig) string {
 			"memory":     config.AnnotatedFieldJSON{Value: a.Memory.Value, Source: a.Memory.Source},
 			"cpus":       config.AnnotatedFieldJSON{Value: a.Cpus.Value, Source: a.Cpus.Source},
 			"pids_limit": config.AnnotatedFieldJSON{Value: a.PidsLimit.Value, Source: a.PidsLimit.Source},
+			"gpus":       config.AnnotatedFieldJSON{Value: a.Gpus.Value, Source: a.Gpus.Source},
 		},
 		"network": map[string]any{
 			"mode":        config.AnnotatedFieldJSON{Value: a.NetworkMode.Value, Source: a.NetworkMode.Source},

@@ -347,6 +347,47 @@ func TestParseNanoCPUs(t *testing.T) {
 	}
 }
 
+func TestParseGPURequests(t *testing.T) {
+	tests := []struct {
+		name      string
+		input     string
+		wantNil   bool
+		wantCount int
+		wantIDs   []string
+		wantErr   bool
+	}{
+		{name: "empty", input: "", wantNil: true},
+		{name: "zero", input: "0", wantNil: true},
+		{name: "none", input: "none", wantNil: true},
+		{name: "all", input: "all", wantCount: -1},
+		{name: "count", input: "2", wantCount: 2},
+		{name: "device prefix", input: "device=0,1", wantIDs: []string{"0", "1"}},
+		{name: "bare ids", input: "GPU-abc,GPU-def", wantIDs: []string{"GPU-abc", "GPU-def"}},
+		{name: "ids with spaces", input: "device=0, 1", wantIDs: []string{"0", "1"}},
+		{name: "negative count", input: "-1", wantErr: true},
+		{name: "empty device list", input: "device=", wantErr: true},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := parseGPURequests(tc.input)
+			if tc.wantErr {
+				assert.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+			if tc.wantNil {
+				assert.Nil(t, got)
+				return
+			}
+			require.Len(t, got, 1)
+			assert.Equal(t, [][]string{{"gpu"}}, got[0].Capabilities)
+			assert.Equal(t, tc.wantCount, got[0].Count)
+			assert.Equal(t, tc.wantIDs, got[0].DeviceIDs)
+		})
+	}
+}
+
 // TestHomeVolumeName verifies deterministic naming from repo path.
 func TestHomeVolumeName(t *testing.T) {
 	// Same path always produces the same name

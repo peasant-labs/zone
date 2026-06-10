@@ -127,6 +127,10 @@ func (m *Manager) createContainer(ctx context.Context, imageID string) (string, 
 	if err != nil {
 		return "", fmt.Errorf("parse cpus: %w", err)
 	}
+	gpuRequests, err := parseGPURequests(m.config.Resources.Gpus)
+	if err != nil {
+		return "", fmt.Errorf("parse gpus: %w", err)
+	}
 
 	mounts := m.buildMounts()
 
@@ -183,9 +187,10 @@ func (m *Manager) createContainer(ctx context.Context, imageID string) (string, 
 		CapDrop:     strslice.StrSlice(sec.CapDrop),
 		CapAdd:      strslice.StrSlice(sec.CapAdd),
 		Resources: container.Resources{
-			Memory:    memBytes,
-			NanoCPUs:  nanoCPUs,
-			PidsLimit: &pidsLimit,
+			Memory:         memBytes,
+			NanoCPUs:       nanoCPUs,
+			PidsLimit:      &pidsLimit,
+			DeviceRequests: gpuRequests,
 		},
 		Sysctls: map[string]string{
 			"net.ipv6.conf.all.disable_ipv6": "1",

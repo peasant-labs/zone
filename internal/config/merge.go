@@ -80,6 +80,7 @@ func Merge(global *GlobalConfig, repo *RepoConfig) (*MergedConfig, *AnnotatedCon
 	m.Resources.Memory, a.Memory.Value, a.Memory.Source = mergeString(global.Resources.Memory, repo.Resources.Memory)
 	m.Resources.Cpus, a.Cpus.Value, a.Cpus.Source = mergeString(global.Resources.Cpus, repo.Resources.Cpus)
 	m.Resources.PidsLimit, a.PidsLimit.Value, a.PidsLimit.Source = mergeIntAnnotated(global.Resources.PidsLimit, repo.Resources.PidsLimit)
+	m.Resources.Gpus, a.Gpus.Value, a.Gpus.Source = mergeString(global.Resources.Gpus, repo.Resources.Gpus)
 
 	// --- Network ---
 	m.Network.Mode, a.NetworkMode.Value, a.NetworkMode.Source = mergeString(global.Network.Mode, repo.Network.Mode)

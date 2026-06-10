@@ -66,6 +66,7 @@ type ResourcesConfig struct {
 	Memory    string `toml:"memory"`
 	Cpus      string `toml:"cpus"`
 	PidsLimit int    `toml:"pids_limit"`
+	Gpus      string `toml:"gpus"`
 }
 
 // NetworkConfig holds the [network] section of a config file.
@@ -153,6 +154,7 @@ type AnnotatedConfig struct {
 	Memory    AnnotatedField[string]
 	Cpus      AnnotatedField[string]
 	PidsLimit AnnotatedField[int]
+	Gpus      AnnotatedField[string]
 	// Network
 	NetworkMode AnnotatedField[string]
 	Allow       []AnnotatedListItem

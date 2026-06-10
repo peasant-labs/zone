@@ -13,6 +13,7 @@ harness = "opencode"
 # memory = "4g"
 # cpus = "2"
 # pids_limit = 512
+# gpus = "all"   # GPU passthrough: "all", a count like "2", or "device=0,1". Needs NVIDIA Container Toolkit.
 
 # ---- Workspace settings ----
 # [workspace]

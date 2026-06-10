@@ -229,7 +229,7 @@ var allKnownKeys = []string{
 	"auth.mount_home_config", "auth.forward_env", "auth.forward_ssh_agent", "auth.env_file",
 	"workspace.mount_path", "workspace.extra_mounts", "workspace.ports", "workspace.persist_home",
 	"packages.apt", "packages.pip", "packages.npm",
-	"resources.memory", "resources.cpus", "resources.pids_limit",
+	"resources.memory", "resources.cpus", "resources.pids_limit", "resources.gpus",
 	"network.mode", "network.allow", "network.deny", "network.default_allow", "network.default_deny",
 	"network.http_proxy", "network.https_proxy", "network.no_proxy",
 	"hooks.pre_build", "hooks.post_stop",
